@@ -1,0 +1,11 @@
+device: cpu
+model: small
+input: /Users/wojtek/DTU/Thesis/data/bbc.mp3
+output: ./transcribtion
+decode_options:
+  # language: English
+  # task: transcribe
+  temperature: 0.5
+  best_of: 10
+  fp16: false
+  verbose: false
