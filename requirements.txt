@@ -1,0 +1,6 @@
+hydra-core
+torch
+whisper
+pandas
+scikit-learn
+loguru
