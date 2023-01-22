@@ -14,6 +14,12 @@ def transcribe(cfg) -> None :
     # check input
     inputs = input_files_list(cfg.input)
 
+    # Check if device is available
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
+
+
     # load Whisper model
     model = whisper.load_model(
         cfg.model,
