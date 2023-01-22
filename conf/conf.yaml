@@ -1,11 +1,11 @@
-device: cpu
+device: cuda
 model: small
-input: /Users/wojtek/DTU/Thesis/data/bbc.mp3
+input: ./data
 output: ./transcribtion
 decode_options:
   # language: English
   # task: transcribe
   temperature: 0.5
   best_of: 10
-  fp16: false
+  fp16: true
   verbose: false
