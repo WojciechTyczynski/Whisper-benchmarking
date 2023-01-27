@@ -1,6 +1,13 @@
 import jiwer
 from whisper.normalizers import EnglishTextNormalizer
 import os
+from loguru import logger
+import whisper
+import torch
+from datasets import LibriSpeech
+import numpy as np
+import tqdm
+import pandas
 
 def get_WER_MultipleTexts(transcription:list, reference:list, normalizer=EnglishTextNormalizer()) -> float: 
     """
@@ -37,4 +44,60 @@ def input_files_list(input):
         return find_audio_files(input)
     else:
         return [input]
-        
+
+
+def benchmark_model(cfg, model:str, dataset_str:str, device:str, decode_options:dict, without_timestamps = True ,normalizer=EnglishTextNormalizer()) -> pandas.DataFrame:
+    """
+    Benchmark a Whisper model on a dataset.
+    
+    Parameters
+    ----------
+    model: Whisper model
+    dataset: path to directory with audio files and reference transcriptions
+    """
+    # We can then add more benchmarking datasets
+    if dataset_str == 'LibriSpeech':
+        dataset = LibriSpeech("test-clean")
+    else:
+        logger.error("Dataset not supported.")
+        return
+    
+    loader = torch.utils.data.DataLoader(dataset, batch_size=16)
+    logger.info(f"Loaded {dataset_str} dataset with {len(dataset)} utterances.")
+    
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
+    
+    if model in cfg.available_models:
+        model = whisper.load_model(model, device=torch.device(cfg.device))
+        logger.info(f"Loaded {model} model.")
+    else:
+        logger.error("Model not supported.")
+        return
+    
+    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
+        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
+    
+    model = model.to(device)
+
+    # predict without timestamps for short-form transcription
+    options = whisper.DecodingOptions(language="en", without_timestamps=without_timestamps)
+    
+    hypotheses = []
+    references = []
+
+    for mels, texts in tqdm(loader):
+        results = model.decode(mels, options)
+        hypotheses.extend([result.text for result in results])
+        references.extend(texts)
+
+    data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+
+    wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
+    logger.info(f"WER: {wer:.2%}")
+    return data
+
+
+
+
