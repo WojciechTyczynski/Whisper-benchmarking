@@ -5,6 +5,8 @@ import hydra
 import torch
 import os
 import utilities as ut
+import platform
+
 
 @torch.inference_mode()
 @hydra.main(version_base=None, config_path="../conf", config_name="conf.yaml")
@@ -37,7 +39,12 @@ def transcribe(cfg) -> None :
         result = model.transcribe(input, **cfg.decode_options)
 
         #save result to csv
+        if platform.system() == 'Windows': # I need this fix for my pc at home LOL
+            input = input.replace('\\', '/')
         output_name = input.split('/')[-1].split('.')[0]
+        print(output_name)
+        print(cfg.output)
+        print(f'{cfg.output}/{output_name}_transcribtion.csv')
         df = pd.DataFrame(result['segments'])
         df[['start', 'end', 'text']].to_csv(f'{cfg.output}/{output_name}_transcribtion.csv', index=True)
 
