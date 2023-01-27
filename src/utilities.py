@@ -7,7 +7,7 @@ import torch
 from datasets import LibriSpeech
 import numpy as np
 import tqdm
-import pandas
+import pandas as pd
 
 def get_WER_MultipleTexts(transcription:list, reference:list, normalizer=EnglishTextNormalizer()) -> float: 
     """
@@ -46,7 +46,7 @@ def input_files_list(input):
         return [input]
 
 
-def benchmark_model(cfg, model:str, dataset_str:str, device:str, decode_options:dict, without_timestamps = True ,normalizer=EnglishTextNormalizer()) -> pandas.DataFrame:
+def benchmark_model(cfg, model:str, dataset_str:str, device:str, decode_options:dict, without_timestamps = True ,normalizer=EnglishTextNormalizer()) -> pd.DataFrame:
     """
     Benchmark a Whisper model on a dataset.
     

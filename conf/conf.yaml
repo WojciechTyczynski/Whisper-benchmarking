@@ -2,6 +2,7 @@ device: cuda
 model: small
 input: ./data
 output: ./transcribtion
+available_models: [tiny.en, tiny, base, base.en, base, smalle.en, small, medium.en, medium, large]
 decode_options:
   # language: English
   # task: transcribe
