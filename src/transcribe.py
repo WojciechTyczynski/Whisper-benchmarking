@@ -32,4 +32,19 @@ def transcribe(cfg, files):
 
     return result_dict
 
-    
+def transcribe_api(cfg, file):
+    # Check if device is available
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
+
+    # load Whisper model
+    model = whisper.load_model(
+        cfg.model,
+        device=torch.device(cfg.device),
+    )
+
+    logger.info(f"{cfg.model} model loaded.")
+    logger.info(f"Transcription started")
+    result = model.transcribe(file, **cfg.decode_options)
+    return result['segments']
