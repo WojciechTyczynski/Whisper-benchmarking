@@ -21,4 +21,4 @@ module load ffmpeg/5.0.1
 # Activate the virtual environment -> link to your own before starting 
 source /zhome/ad/4/137151/venv_2/bin/activate
 
-python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py input=/zhome/ad/4/137151/Whisper-transcribe-tool/data/
+python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py input=/zhome/ad/4/137151/Whisper-transcribe-tool/data/ model=large
