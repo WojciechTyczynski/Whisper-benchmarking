@@ -23,10 +23,10 @@ def transcribe(cfg, files):
     # load audio file
     for file in files:
         logger.info(f"Transcribing {file}")
-        result = model.transcribe(file, **cfg.decode_options)
         if platform.system() == 'Windows': # I need this fix for my pc at home LOL
-            input = input.replace('\\', '/')
-        output_name = input.split('/')[-1].split('.')[0]
+            file = file.replace('\\', '/')
+        result = model.transcribe(file, **cfg.decode_options)
+        output_name = file.split('/')[-1].split('.')[0]
         result_dict[output_name] = result['segments']
 
 
