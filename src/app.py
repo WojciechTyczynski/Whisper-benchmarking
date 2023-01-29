@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from typing import Union
+import uvicorn
 
 app = FastAPI()
 
@@ -20,3 +21,8 @@ def transcribe_file(file: Union[UploadFile, None] = None):
         return {"message": "No upload file sent"}
     else:
         return {"filename": file.filename}
+
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)
