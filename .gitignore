@@ -4,3 +4,4 @@
 /src/outputs/*/*/*.yaml
 **outputs/
 **transcribtion/
+/src/__pycache__/
