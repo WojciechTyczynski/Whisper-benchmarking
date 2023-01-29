@@ -37,14 +37,11 @@ def transcribe(cfg) -> None :
         # load audio file
         logger.info(f"Transcribing {input}")
         result = model.transcribe(input, **cfg.decode_options)
-
+        print(result.keys())
         #save result to csv
         if platform.system() == 'Windows': # I need this fix for my pc at home LOL
             input = input.replace('\\', '/')
         output_name = input.split('/')[-1].split('.')[0]
-        print(output_name)
-        print(cfg.output)
-        print(f'{cfg.output}/{output_name}_transcribtion.csv')
         df = pd.DataFrame(result['segments'])
         df[['start', 'end', 'text']].to_csv(f'{cfg.output}/{output_name}_transcribtion.csv', index=True)
 
