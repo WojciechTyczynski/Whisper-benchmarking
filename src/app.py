@@ -5,6 +5,7 @@ from transcribe import transcribe_api
 import utilities as ut
 from loguru import logger
 import pandas as pd
+import uvicorn
 
 app = FastAPI()
 
@@ -39,3 +40,8 @@ def transcribe_file(audio_file: UploadFile):
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):
     return {"filename": file.filename}
+
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="localhost", port=8000)
