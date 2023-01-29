@@ -57,9 +57,12 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
     model: Whisper model
     dataset: path to directory with audio files and reference transcriptions
     """
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
     # We can then add more benchmarking datasets
     if cfg.dataset_str == 'LibriSpeech':
-        dataset = LibriSpeech("test-clean")
+        dataset = LibriSpeech("test-clean", device=cfg.device)
     else:
         logger.error("Dataset not supported.")
         return
@@ -67,9 +70,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
     loader = torch.utils.data.DataLoader(dataset, batch_size=16)
     logger.info(f"Loaded {cfg.dataset_str} dataset with {len(dataset)} utterances.")
     
-    if cfg.device == 'cuda' and not torch.cuda.is_available():
-        logger.warning("CUDA not available, using CPU instead.")
-        cfg.device = 'cpu'
+    
     
     if cfg.model in cfg.available_models:
         model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
