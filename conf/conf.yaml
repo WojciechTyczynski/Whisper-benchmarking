@@ -1,5 +1,5 @@
 device: cuda
-model: small
+model: tiny
 input: ./data
 output: ./transcribtion
 available_models: [tiny.en, tiny, base, base.en, base, smalle.en, small, medium.en, medium, large]
