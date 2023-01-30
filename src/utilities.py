@@ -4,7 +4,9 @@ import os
 from loguru import logger
 import whisper
 import torch
-from datasets.LibriSpeech import LibriSpeech
+from datasets_loaders.LibriSpeech import LibriSpeech
+from datasets_loaders.Fleurs import Fleurs
+from datasets import load_dataset
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
@@ -94,14 +96,17 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     # We can then add more benchmarking datasets
-    if cfg.cfg.benchmark.dataset == 'LibriSpeech':
+    if cfg.benchmark.dataset == 'LibriSpeech':
         dataset = LibriSpeech("test-clean", device=cfg.device)
+    elif cfg.benchmark.dataset == 'fleurs':
+        dataset = Fleurs(split='test', device=cfg.device, language = cfg.benchmark.language)
+        normalizer = None
     else:
         logger.error("Dataset not supported.")
         return
     
     loader = torch.utils.data.DataLoader(dataset, batch_size=16)
-    logger.info(f"Loaded {cfg.cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
+    logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
     
@@ -129,6 +134,8 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
     logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
+    for i,j in zip(hypotheses, references):
+        print(f'{j}     <>      {i}')
 
 
 
