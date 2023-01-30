@@ -30,9 +30,9 @@ def get_WER_MultipleTexts(transcription:list, reference:list, normalizer=English
 def get_WER_SingleText(transcription:str, reference:str, normalizer=EnglishTextNormalizer()) -> float:
     """Calculate WER between transcription and reference.
     Transcription and reference are strings."""
-    normalizer = EnglishTextNormalizer()
-    transcription = normalizer(transcription)
-    reference = normalizer(reference)
+    if normalizer is not None:
+        transcription = normalizer(transcription)
+        reference = normalizer(reference)
     wer = jiwer.wer(reference, transcription)
     return wer
 
