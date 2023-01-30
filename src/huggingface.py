@@ -1,6 +1,7 @@
 from transformers import WhisperForConditionalGeneration, pipeline
 from datasets import load_dataset
 
+# rename datasets folder to make this work
 
 # load dummy dataset and read audio files
 ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
