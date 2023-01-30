@@ -21,8 +21,9 @@ def get_WER_MultipleTexts(transcription:list, reference:list, normalizer=English
     Calculate WER between transcription and reference.
     Transcription and reference are lists of strings.
     """
-    transcription = [normalizer(text) for text in transcription]
-    reference = [normalizer(text) for text in reference]
+    if normalizer is not None:
+        transcription = [normalizer(text) for text in transcription]
+        reference = [normalizer(text) for text in reference]
     wer = jiwer.wer(reference, transcription)
     return wer
 
