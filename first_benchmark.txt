@@ -1,0 +1,9 @@
+2023-01-29 19:39:49.388 | INFO     | utilities:benchmark_model:130 - Time: 80.01411 seconds, WER: 5.92151%, Model: tiny.en, Dataset: LibriSpeech CATCHME
+2023-01-29 19:41:09.324 | INFO     | utilities:benchmark_model:130 - Time: 69.48618 seconds, WER: 7.68288%, Model: tiny, Dataset: LibriSpeech CATCHME
+2023-01-29 19:42:50.918 | INFO     | utilities:benchmark_model:130 - Time: 90.28825 seconds, WER: 5.28787%, Model: base, Dataset: LibriSpeech CATCHME
+2023-01-29 19:44:28.528 | INFO     | utilities:benchmark_model:130 - Time: 88.41225 seconds, WER: 4.32798%, Model: base.en, Dataset: LibriSpeech CATCHME
+2023-01-29 19:47:41.925 | INFO     | utilities:benchmark_model:130 - Time: 160.80882 seconds, WER: 3.21534%, Model: small.en, Dataset: LibriSpeech CATCHME
+2023-01-29 19:50:40.374 | INFO     | utilities:benchmark_model:130 - Time: 162.68680 seconds, WER: 3.50765%, Model: small, Dataset: LibriSpeech CATCHME
+2023-01-29 19:58:09.260 | INFO     | utilities:benchmark_model:130 - Time: 354.17154 seconds, WER: 3.22100%, Model: medium.en, Dataset: LibriSpeech CATCHME
+2023-01-29 20:05:31.052 | INFO     | utilities:benchmark_model:130 - Time: 366.57024 seconds, WER: 3.07391%, Model: medium, Dataset: LibriSpeech CATCHME
+2023-01-29 20:16:29.322 | INFO     | utilities:benchmark_model:130 - Time: 611.29087 seconds, WER: 4.39965%, Model: large, Dataset: LibriSpeech CATCHME
