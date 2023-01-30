@@ -127,8 +127,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
     end = time.time()
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"Decoding time: {end - start:.2f} seconds")
-    logger.info(f"WER: {wer:.2%}")
+    logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.dataset_str} CATCHME")
 
 
 

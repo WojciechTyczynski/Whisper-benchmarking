@@ -3,7 +3,7 @@ model: small
 input: ./data
 output: ./transcribtion
 dataset_str : "LibriSpeech"
-available_models: [tiny.en, tiny, base, base.en, base, smalle.en, small, medium.en, medium, large]
+available_models: [tiny.en, tiny, base, base.en, base, small.en, small, medium.en, medium, large]
 greet_message: "Hello AI "
 decode_options:
   # language: English
@@ -12,3 +12,4 @@ decode_options:
   best_of: 10
   fp16: true
   verbose: false
+  language: English
