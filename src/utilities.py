@@ -94,14 +94,14 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     # We can then add more benchmarking datasets
-    if cfg.dataset_str == 'LibriSpeech':
+    if cfg.cfg.benchmark.dataset == 'LibriSpeech':
         dataset = LibriSpeech("test-clean", device=cfg.device)
     else:
         logger.error("Dataset not supported.")
         return
     
     loader = torch.utils.data.DataLoader(dataset, batch_size=16)
-    logger.info(f"Loaded {cfg.dataset_str} dataset with {len(dataset)} utterances.")
+    logger.info(f"Loaded {cfg.cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
     
@@ -128,7 +128,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
     end = time.time()
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.dataset_str} CATCHME")
+    logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
 
 
 

@@ -7,6 +7,7 @@ from loguru import logger
 import pandas as pd
 import uvicorn
 from fastapi.responses import HTMLResponse
+from omegaconf import OmegaConf
 
 app = FastAPI()
 
@@ -35,6 +36,10 @@ async def main():
 @app.get('/greet', status_code=200)
 def say_hello():
     return api_config.greet_message
+
+@app.get('/config', status_code=200)
+def get_config():
+    return {'config': OmegaConf.to_container(api_config)}
 
 # Define endpoint to transcribe a file
 @app.post("/transcribe/")

@@ -1,13 +1,12 @@
+defaults:
+  - benchmark: librispeech
 device: cuda
 model: small
 input: ./data
 output: ./transcribtion
-dataset_str : "LibriSpeech"
 available_models: [tiny.en, tiny, base, base.en, base, small.en, small, medium.en, medium, large]
 greet_message: "Hello AI "
 decode_options:
-  # language: English
-  # task: transcribe
   temperature: 0.5
   best_of: 10
   fp16: true
