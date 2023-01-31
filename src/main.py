@@ -15,7 +15,11 @@ def run(cfg) -> None :
     os.chdir(hydra.utils.get_original_cwd())
     print(cfg.decode_options)
     
-    options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16, language=cfg.decode_options.language, beam_size=5, temperature=0)
+    options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16,
+            # language=cfg.decode_options.language,
+            # beam_size=1,
+            # temperature=0,
+        )
     ut.benchmark_model(cfg, options)
 
     # check input

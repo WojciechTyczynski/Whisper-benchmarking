@@ -134,8 +134,8 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
     logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
-    for i,j in zip(hypotheses, references):
-        print(f'{j}     <>      {i}')
+    # for i,j in zip(hypotheses, references):
+    #     print(f'{j}     <>      {i}')
 
 
 
