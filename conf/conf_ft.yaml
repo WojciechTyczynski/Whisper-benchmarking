@@ -1,0 +1,6 @@
+api_token: 
+device: cuda
+model: medium
+language: danish
+task: transcribe
+output_dir: "/work3/s212373/models/whisper-medium-da"

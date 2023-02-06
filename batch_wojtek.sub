@@ -3,7 +3,7 @@
 #BSUB -J WhisperTranscript
 #BSUB -n 4
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -W 02:00
+#BSUB -W 08:00
 #BSUB -R "span[hosts=1]"
 #BSUB -R "rusage[mem=5GB]"
 #BSUB -o gpu_%J.out
@@ -13,17 +13,17 @@
 nvidia-smi
 
 #Load the necessary modules
-module load cuda/11.7
+module load cuda/11.3
 module load python3/3.9.11
 module load ffmpeg/5.0.1
 
 # Activate the virtual environment -> link to your own before starting 
 source /zhome/10/4/164561/whisper_venv/bin/activate
 
-MODELS="tiny.en tiny base base.en small.en small medium.en medium large"
+# MODELS="tiny base small medium large"
 
-python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=small benchmark=fleurs
+python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/fine_tune.py
 # for model in $MODELS
 # do
-#     python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=$model
+#     python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/fine_tune.py model=$model benchmark=fleurs
 # done

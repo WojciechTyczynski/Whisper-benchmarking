@@ -13,3 +13,4 @@ decode_options:
   best_of: 10
   fp16: true
   verbose: false
+  beam_size: 3

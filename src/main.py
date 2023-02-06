@@ -17,7 +17,7 @@ def run(cfg) -> None :
     
     options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16,
             # language=cfg.decode_options.language,
-            # beam_size=1,
+            beam_size=cfg.decode_options.beam_size
             # temperature=0,
         )
     ut.benchmark_model(cfg, options)
