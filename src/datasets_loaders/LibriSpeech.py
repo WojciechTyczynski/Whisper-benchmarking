@@ -1,7 +1,9 @@
+import os
+
 import torch
-import os 
 import torchaudio
 import whisper
+
 
 class LibriSpeech(torch.utils.data.Dataset):
     """

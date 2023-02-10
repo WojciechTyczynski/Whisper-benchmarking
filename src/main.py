@@ -1,9 +1,11 @@
-from loguru import logger
-import whisper
-import pandas as pd
-import hydra
-import torch
 import os
+
+import hydra
+import pandas as pd
+import torch
+import whisper
+from loguru import logger
+
 import utilities as ut
 from transcribe import transcribe
 

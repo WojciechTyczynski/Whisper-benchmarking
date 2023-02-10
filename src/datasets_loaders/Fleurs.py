@@ -1,6 +1,7 @@
-from datasets import load_dataset
 import torch
 import whisper
+from datasets import load_dataset
+
 
 class Fleurs(torch.utils.data.Dataset):
     """

@@ -1,20 +1,20 @@
-import jiwer
-from whisper.normalizers import EnglishTextNormalizer
 import os
-from loguru import logger
-import whisper
-import torch
-from datasets_loaders.LibriSpeech import LibriSpeech
-from datasets_loaders.Fleurs import Fleurs
-from datasets import load_dataset
+import time
+from typing import BinaryIO, Union
+
+import ffmpeg
+import jiwer
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
 import torch
-import ffmpeg
-from typing import BinaryIO, Union
-import time
+import whisper
+from datasets import load_dataset
+from loguru import logger
+from tqdm import tqdm
+from whisper.normalizers import EnglishTextNormalizer
 
+from datasets_loaders.Fleurs import Fleurs
+from datasets_loaders.LibriSpeech import LibriSpeech
 
 SAMPLE_RATE=16000
 

@@ -1,15 +1,19 @@
-from huggingface_hub import login
-from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, WhisperProcessor, WhisperTokenizer, WhisperFeatureExtractor, WhisperForConditionalGeneration
-from datasets import load_dataset, DatasetDict, Audio, DownloadConfig
-import hydra
 import os
-import torch
-from loguru import logger
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
-import datasets
 from pathlib import Path
+from typing import Any, Dict, List, Union
+
+import datasets
 import evaluate
+import hydra
+import torch
+from datasets import Audio, DatasetDict, DownloadConfig, load_dataset
+from huggingface_hub import login
+from loguru import logger
+from transformers import (Seq2SeqTrainer, Seq2SeqTrainingArguments,
+                          WhisperFeatureExtractor,
+                          WhisperForConditionalGeneration, WhisperProcessor,
+                          WhisperTokenizer)
 
 # datasets.config.DOWNLOADED_DATASETS_PATH = Path('/work3/s212373/datasets')
 

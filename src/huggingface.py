@@ -1,5 +1,5 @@
-from transformers import WhisperForConditionalGeneration, pipeline
 from datasets import load_dataset
+from transformers import WhisperForConditionalGeneration, pipeline
 
 # rename datasets folder to make this work
 
