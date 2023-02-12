@@ -103,7 +103,10 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         normalizer=EnglishTextNormalizer()
     elif cfg.benchmark.dataset == 'fleurs':
         dataset = Fleurs(split='test', device=cfg.device, language = cfg.benchmark.language)
-        normalizer=BasicTextNormalizer()
+        if cfg.benchmark.language == 'en':
+            normalizer=EnglishTextNormalizer()
+        else:
+            normalizer=BasicTextNormalizer()
     elif cfg.benchmark.dataset == 'FTSpeech':
         dataset = FTSpeech(split='ft-speech_test-balanced', device=cfg.device)
         normalizer=BasicTextNormalizer()
