@@ -1,5 +1,5 @@
 import jiwer
-from whisper.normalizers import EnglishTextNormalizer
+from whisper.normalizers import EnglishTextNormalizer,  BasicTextNormalizer
 import os
 from loguru import logger
 import whisper
@@ -83,7 +83,7 @@ def load_audio_file(file: BinaryIO, sr: int = SAMPLE_RATE):
     return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
 
 
-def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishTextNormalizer()):
+def benchmark_model(cfg, options:whisper.DecodingOptions):
     """
     Benchmark a Whisper model on a dataset.
     
@@ -98,14 +98,18 @@ def benchmark_model(cfg, options:whisper.DecodingOptions ,normalizer=EnglishText
     # We can then add more benchmarking datasets
     if cfg.benchmark.dataset == 'LibriSpeech':
         dataset = LibriSpeech("test-clean", device=cfg.device)
+        normalizer=EnglishTextNormalizer()
     elif cfg.benchmark.dataset == 'fleurs':
         dataset = Fleurs(split='test', device=cfg.device, language = cfg.benchmark.language)
-        normalizer = None
+        normalizer=BasicTextNormalizer()
+    elif cfg.benchmark.dataset = 'FTSpeech':
+        dataset = Fleurs(split='ft-speech_test-balanced', device=cfg.device, language = cfg.benchmark.language)
+        normalizer=BasicTextNormalizer()
     else:
         logger.error("Dataset not supported.")
         return
     
-    loader = torch.utils.data.DataLoader(dataset, batch_size=16)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=cfg.batch_size)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
