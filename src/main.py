@@ -13,10 +13,9 @@ from transcribe import transcribe
 def run(cfg) -> None :
     
     os.chdir(hydra.utils.get_original_cwd())
-    print(cfg.decode_options)
-    
+    print(cfg.benchmark.dataset)    
     options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16,
-            # language=cfg.decode_options.language,
+            language=cfg.benchmark.language,
             beam_size=cfg.decode_options.beam_size
             # temperature=0,
         )

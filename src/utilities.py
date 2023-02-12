@@ -6,6 +6,7 @@ import whisper
 import torch
 from datasets_loaders.LibriSpeech import LibriSpeech
 from datasets_loaders.Fleurs import Fleurs
+from datasets_loaders.FTSpeech import FTSpeech
 from datasets import load_dataset
 import numpy as np
 from tqdm import tqdm
@@ -102,8 +103,8 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     elif cfg.benchmark.dataset == 'fleurs':
         dataset = Fleurs(split='test', device=cfg.device, language = cfg.benchmark.language)
         normalizer=BasicTextNormalizer()
-    elif cfg.benchmark.dataset = 'FTSpeech':
-        dataset = Fleurs(split='ft-speech_test-balanced', device=cfg.device, language = cfg.benchmark.language)
+    elif cfg.benchmark.dataset == 'FTSpeech':
+        dataset = FTSpeech(split='ft-speech_test-balanced', device=cfg.device)
         normalizer=BasicTextNormalizer()
     else:
         logger.error("Dataset not supported.")
