@@ -99,25 +99,25 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         cfg.device = 'cpu'
     # We can then add more benchmarking datasets
     if cfg.benchmark.dataset == 'LibriSpeech':
-        dataset = LibriSpeech("test-clean", device=cfg.device)
+        dataset = LibriSpeech("test-clean", device='cpu')
         normalizer=EnglishTextNormalizer()
     elif cfg.benchmark.dataset == 'fleurs':
-        dataset = Fleurs(split='test', device=cfg.device, language = cfg.benchmark.language)
+        dataset = Fleurs(split='test', device='cpu', language = cfg.benchmark.language)
         if cfg.benchmark.language == 'en':
             normalizer=EnglishTextNormalizer()
         else:
             normalizer=BasicTextNormalizer()
     elif cfg.benchmark.dataset == 'FTSpeech':
-        dataset = FTSpeech(split='ft-speech_test-balanced', device=cfg.device)
+        dataset = FTSpeech(split='ft-speech_test-balanced')
         normalizer=BasicTextNormalizer()
     elif cfg.benchmark.dataset == 'NST_dk':
-        dataset = NST_dk(split='test', device=cfg.device)
+        dataset = NST_dk(split='test', device='cpu')
         normalizer=BasicTextNormalizer()
     else:
         logger.error("Dataset not supported.")
         return
     
-    loader = torch.utils.data.DataLoader(dataset, batch_size=cfg.batch_size)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=cfg.batch_size, num_workers=cfg.num_workers)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
@@ -139,7 +139,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     # measure time
     start = time.time()
     for mels, texts in tqdm(loader):
-        results = model.decode(mels, options)
+        results = model.decode(mels.to(cfg.device), options)
         hypotheses.extend([result.text for result in results])
         references.extend(texts)
     end = time.time()
