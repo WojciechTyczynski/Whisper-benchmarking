@@ -13,7 +13,7 @@
 nvidia-smi
 
 #Load the necessary modules
-module load cuda/11.3
+module load cuda/10.2
 module load python3/3.9.11
 module load ffmpeg/5.0.1
 
