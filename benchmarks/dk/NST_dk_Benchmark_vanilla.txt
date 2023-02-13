@@ -1,0 +1,5 @@
+2023-02-12 21:24:34.116 | INFO     | utilities:benchmark_model:148 - Time: 2540.60731 seconds, WER: 91.00054%, Model: tiny, Dataset: NST_dk CATCHME
+2023-02-12 22:02:31.203 | INFO     | utilities:benchmark_model:148 - Time: 2256.96817 seconds, WER: 65.50231%, Model: base, Dataset: NST_dk CATCHME
+2023-02-12 22:49:25.169 | INFO     | utilities:benchmark_model:148 - Time: 2793.85607 seconds, WER: 39.57807%, Model: small, Dataset: NST_dk CATCHME
+2023-02-13 00:28:27.705 | INFO     | utilities:benchmark_model:148 - Time: 5910.20323 seconds, WER: 26.62747%, Model: medium, Dataset: NST_dk CATCHME
+2023-02-13 02:55:24.676 | INFO     | utilities:benchmark_model:148 - Time: 8763.30380 seconds, WER: 24.56953%, Model: large, Dataset: NST_dk CATCHME
