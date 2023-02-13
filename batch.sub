@@ -1,11 +1,11 @@
 #!/bin/sh
 #BSUB -q gpua100
 #BSUB -J WhisperTranscript
-#BSUB -n 4
+#BSUB -n 12
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -W 02:00
+#BSUB -W 15:00
 #BSUB -R "span[hosts=1]"
-#BSUB -R "rusage[mem=5GB]"
+#BSUB -R "rusage[mem=8GB]"
 #BSUB -o gpu_%J.out
 # -- end of LSF options --
 
@@ -20,9 +20,9 @@ module load ffmpeg/5.0.1
 # Activate the virtual environment -> link to your own before starting 
 source /zhome/ad/4/137151/venv_2/bin/activate
 
-MODELS="tiny.en tiny base base.en small.en small medium.en medium large"
+MODELS="tiny base small medium large" 
 
 for model in $MODELS
 do
-    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model
+    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model benchmark=fleurs_da batch_size=128
 done
