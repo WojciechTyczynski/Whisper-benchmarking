@@ -102,7 +102,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         dataset = LibriSpeech("test-clean", device='cpu')
         normalizer=EnglishTextNormalizer()
     elif cfg.benchmark.dataset == 'fleurs':
-        dataset = Fleurs(split='test', device='cpu', language = cfg.benchmark.language)
+        dataset = Fleurs(split='test', device='cpu', language = cfg.benchmark.dataset_language)
         if cfg.benchmark.language == 'en':
             normalizer=EnglishTextNormalizer()
         else:
