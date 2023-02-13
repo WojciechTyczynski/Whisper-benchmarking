@@ -20,10 +20,11 @@ module load ffmpeg/5.0.1
 # Activate the virtual environment -> link to your own before starting 
 source /zhome/10/4/164561/whisper_venv/bin/activate
 
-MODELS="tiny base small medium large"
+MODELS="tiny base small medium tiny.en base.en small.en medium.en large"
+# MODELS="large"
 
 # python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/fine_tune.py
 for model in $MODELS
 do
-    python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=$model 
+    python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=$model benchmark=fleurs benchmark.language='en' benchmark.dataset_language='en_us'
 done
