@@ -1,0 +1,5 @@
+2023-02-13 11:55:36.391 | INFO     | utilities:benchmark_model:148 - Time: 91.51844 seconds, WER: 94.14980%, Model: tiny, Dataset: fleurs CATCHME
+2023-02-13 11:56:50.173 | INFO     | utilities:benchmark_model:148 - Time: 59.18518 seconds, WER: 65.86032%, Model: base, Dataset: fleurs CATCHME
+2023-02-13 11:58:20.718 | INFO     | utilities:benchmark_model:148 - Time: 70.22871 seconds, WER: 37.51518%, Model: small, Dataset: fleurs CATCHME
+2023-02-13 12:01:18.759 | INFO     | utilities:benchmark_model:148 - Time: 144.53771 seconds, WER: 22.80364%, Model: medium, Dataset: fleurs CATCHME
+2023-02-13 12:05:57.600 | INFO     | utilities:benchmark_model:148 - Time: 226.85075 seconds, WER: 16.68016%, Model: large, Dataset: fleurs CATCHME
