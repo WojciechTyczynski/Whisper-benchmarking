@@ -7,7 +7,7 @@ input: ./data
 output: ./transcribtion
 available_models: [tiny.en, tiny, base, base.en, base, small.en, small, medium.en, medium, large]
 greet_message: "Hello AI "
-batch_size: 64
+batch_size: 32
 num_workers: 12
 decode_options:
   task: transcribe
