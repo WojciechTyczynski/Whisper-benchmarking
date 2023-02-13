@@ -7,7 +7,7 @@ class Fleurs(torch.utils.data.Dataset):
     A simple class to wrap fleurs and trim/pad the audio to 30 seconds.
     """
     def __init__(self, split="test", device='cpu', language='da_dk'):
-        self.dataset = load_dataset("google/fleurs", language, split=split)
+        self.dataset = load_dataset("google/fleurs", language, split=split, cache_dir='/work3/s212373/fleurs')
         self.dataset =  self.dataset.remove_columns(['id', 'num_samples', 'path',
                                                      'transcription', 'gender',
                                                      'lang_id', 'language', 'lang_group_id'])
