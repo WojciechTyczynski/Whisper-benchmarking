@@ -92,8 +92,10 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     
     Parameters
     ----------
-    model: Whisper model
-    dataset: path to directory with audio files and reference transcriptions
+    cfg : Config object
+        The configuration object.
+    options : whisper.DecodingOptions
+        The decoding options.    
     """
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
