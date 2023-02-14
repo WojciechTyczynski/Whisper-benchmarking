@@ -1,10 +1,16 @@
 Setup environment
+Modules:
+module load cuda/11.3
+module load ffmpeg
+module load python/3.9.11
+
 
 # install torch like this 
-pip3 install torch==1.10.1 torchvision==0.11.1 torchaudio==0.10.1 --extra-index-url https://download.pytorch.org/whl/cu113
+pip3 install torchaudio==0.10.1 --extra-index-url https://download.pytorch.org/whl/cu113
 
 # install other dependencies
 pip3 install -r requirements.txt
+pip install git+https://github.com/openai/whisper.git 
 
 Modules:
 module load cuda/11.3
