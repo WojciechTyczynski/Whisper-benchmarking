@@ -2,7 +2,7 @@ Setup environment
 Modules:
 module load cuda/11.3
 module load ffmpeg
-module load python/3.9.11
+module load python3/3.9.11
 
 
 # install torch like this 
