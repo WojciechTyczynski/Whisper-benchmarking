@@ -8,9 +8,12 @@ class FTSpeech(torch.utils.data.Dataset):
     A simple class to wrap ftspeech and trim/pad the audio to 30 seconds.
     It will drop the last few seconds of a very small portion of the utterances.
     """
-    def __init__(self,path = "/dtu/blackhole/1f/137151/ftspeech/", split="ft-speech_dev-balanced", device='cpu'):
+    def __init__(self,path = "/dtu/blackhole/1f/137151/ftspeech/", split="ft-speech_dev-balanced", device='cpu', remove_long = True):
         self.path = path
-        self.data = pd.read_csv(f'{path}text/{split}.tsv',sep='\t')        
+        self.data = pd.read_csv(f'{path}text/{split}.tsv',sep='\t')
+        if remove_long:
+            self.data['duration'] = self.data['end_time'] - self.data['start_time']
+            self.data = self.data[self.data['duration'] <= 30]        
         self.device = device
         self.last_filepath = ""
         self.last_audio = None
