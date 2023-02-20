@@ -9,6 +9,7 @@ from datasets_loaders.Fleurs import Fleurs
 from datasets_loaders.FTSpeech import FTSpeech
 from datasets_loaders.NST_dk import NST_dk
 from datasets_loaders.Common_voice import Common_voice
+from datasets_loaders.Common_voice_11 import Common_voice_11
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
 from datasets import load_dataset
 import numpy as np
@@ -111,7 +112,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     elif cfg.benchmark.dataset == 'NST_dk':
         dataset = NST_dk(split='test', device='cpu')
     elif cfg.benchmark.dataset == 'Common_voice':
-        dataset = Common_voice(split='test', device='cpu', language = cfg.benchmark.language)
+        dataset = Common_voice_11(split='test', device='cpu', language = cfg.benchmark.language)
     elif cfg.benchmark.dataset == 'Common_voice_5_1':
         dataset = Common_voice_5_1(split='test', device='cpu', language = cfg.benchmark.language)
     else:
