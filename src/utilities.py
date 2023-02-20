@@ -19,7 +19,7 @@ import pandas as pd
 import torch
 import ffmpeg
 from typing import BinaryIO, Union
-import time
+from time import time
 
 
 SAMPLE_RATE=16000
@@ -216,6 +216,69 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     logger.info(f"Time: {start_total - end_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
 
 
+def benchmark_longform_time(cfg):
+    """
+    Benchmark a Whisper model on a longform audio file.
+    It will do batching of the file, to see the speed up of batching.
+
+    Parameters
+    ----------
+    cfg : Config object
+        The configuration object.
+    """
+
+
+    file_path = cfg.benchmark.file
+    filename = file_path.split('/')[-1].split('.')[0]
+
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
     
+    model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+    logger.info(f"Loaded {model} model.")
+    model = model.to(cfg.device)
+    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
+        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
     
+    # we do one initial run to warmup gpu and cache
+    model.transcribe(file_path, **{"language" : cfg.benchmark.language})
+
+    # double batch size for each run
+    results_batched = {}
+    results_linear = {}
+
+    def run(model, file_path, batch_size):
+        start = time()
+        model.transcribe([file_path]*batch_size, **{"language" : cfg.benchmark.language})
+        end = time()
+        return (end - start)/60
+
+    results_linear[1] = run(model, file_path, 1)
+    results_batched[1] = results_linear[1]
+
+    i = 2
+    while i <= cfg.batch_size:
+        logger.info(f"Batch size: {i}")
+        results_linear[i] = results_linear[i//2]*2
+        results_batched[i] = run(model, file_path, i)
+
+        logger.info(f"Batc  nr. {i}: {results_batched[i]} min")
+        i *= 2
+
+        
+    # save as csv
+    with open(f'{"../benchmarks/batching/{filename}_time"}.csv', 'w') as f:
+        for key in results.keys():
+            f.write("%s,%s" % (key, results[key]))
+            f.write("\n")
+    
+    # plot results
+    plt.plot(list(results_batched.keys()), list(results_batched.values()), label='batched')
+    plt.plot(list(results_linear.keys()), list(results_linear.values()), label='linear')
+    plt.xlabel('Batch size')
+    plt.ylabel('Time (min)')
+    plt.title(f'Batching time for {filename}')
+    plt.legend()
+    plt.savefig(f'{"../benchmarks/batching/{filename}_time"}.png')
 
