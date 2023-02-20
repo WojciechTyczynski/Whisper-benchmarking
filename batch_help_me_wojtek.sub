@@ -3,9 +3,10 @@
 #BSUB -J WhisperTranscript
 #BSUB -n 4
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -W 08:00
+#BSUB -W 16:00
 #BSUB -R "span[hosts=1]"
 #BSUB -R "rusage[mem=5GB]"
+#BSUB -R "select[gpu80gb]"
 #BSUB -o gpu_%J.out
 # -- end of LSF options --
 
@@ -26,5 +27,5 @@ MODELS="tiny base small medium tiny.en base.en small.en medium.en large"
 # python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/fine_tune.py
 for model in $MODELS
 do
-    python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=$model benchmark=common_voice_da.yaml batch_size=128 benchmark.language=en
+    python3 /zhome/10/4/164561/Whisper-transcribe-tool/src/main.py model=$model benchmark=common_voice_5_1_en batch_size=128
 done

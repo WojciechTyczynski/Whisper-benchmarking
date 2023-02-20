@@ -1,0 +1,38 @@
+from datasets import load_dataset
+import torch
+import torchaudio
+import whisper
+from datasets import Audio
+import pandas as pd
+
+class Common_voice_5_1(torch.utils.data.Dataset):
+    """
+    A simple class to wrap fleurs and trim/pad the audio to 30 seconds.
+    """
+    def __init__(self, split="test", device='cpu', language='en', path='/work3/s212373/common_voice_5_1/cv-corpus-5.1-2020-06-22/en/'):
+        self.device = device
+        self.device = device
+        self.path = path
+        self.split = split
+        self.dataset = pd.read_csv(f'{self.path}{self.split}.tsv', sep='\t')
+        self.dataset.drop(['client_id', 'up_votes', 'down_votes', 'age', 'gender', 'accent', 'locale', 'segment'], axis=1, inplace=True)
+        self.dataset.dropna(inplace=True)
+        self.dataset = self.dataset.reset_index(drop=True)
+        self.dataset['full_path'] = self.dataset['path'].apply(lambda x: f'{self.path}clips/{x}')
+        self.text_list = self.dataset['sentence']
+        self.file_names = self.dataset['full_path']
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, item):
+        audio, sample_rate =  torchaudio.load(self.file_names[item])
+        text = self.text_list[item]
+        try:
+            assert sample_rate == 16000
+        except:
+            audio = torchaudio.functional.resample(audio, sample_rate, 16000)
+        audio = whisper.pad_or_trim(audio.flatten()).to(self.device)
+        mel = whisper.log_mel_spectrogram(audio)
+        
+        return (mel, text)
