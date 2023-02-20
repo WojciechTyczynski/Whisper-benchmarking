@@ -7,7 +7,7 @@
 #BSUB -R "span[hosts=1]"
 #BSUB -R "rusage[mem=8GB]"
 #BSUB -R "select[gpu80gb]"
-#BSUB -o gpu_%J.out
+#BSUB -o runs/gpu_%J.out
 # -- end of LSF options --
 
 # Print information on gpu
@@ -21,9 +21,9 @@ module load ffmpeg/4.4
 # Activate the virtual environment -> link to your own before starting 
 source /zhome/ad/4/137151/venv_new_torch/bin/activate
 
-MODELS="large" #tiny base small medium 
+MODELS="tiny base small medium large" #tiny base small medium 
 
 for model in $MODELS
 do
-    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model benchmark=common_voice_da batch_size=128
+    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model benchmark=ftspeech batch_size=128
 done

@@ -1,5 +1,5 @@
-2023-02-12 20:18:19.644 | INFO     | utilities:benchmark_model:148 - Time: 355.72324 seconds, WER: 88.66861%, Model: tiny, Dataset: FTSpeech CATCHME
-2023-02-12 20:25:11.654 | INFO     | utilities:benchmark_model:148 - Time: 390.31716 seconds, WER: 63.05092%, Model: base, Dataset: FTSpeech CATCHME
-2023-02-12 20:37:12.625 | INFO     | utilities:benchmark_model:148 - Time: 693.55850 seconds, WER: 41.99990%, Model: small, Dataset: FTSpeech CATCHME
-2023-02-12 21:02:37.849 | INFO     | utilities:benchmark_model:148 - Time: 1482.99989 seconds, WER: 31.76855%, Model: medium, Dataset: FTSpeech CATCHME
-2023-02-12 21:38:14.508 | INFO     | utilities:benchmark_model:148 - Time: 2029.60312 seconds, WER: 27.96895%, Model: large, Dataset: FTSpeech CATCHME
+2023-02-20 14:32:51.209 | INFO     | utilities:benchmark_model:154 - Time: 343.47892 seconds, WER: 89.20534%, Model: tiny, Dataset: FTSpeech CATCHME
+2023-02-20 14:39:23.690 | INFO     | utilities:benchmark_model:154 - Time: 380.01847 seconds, WER: 62.80808%, Model: base, Dataset: FTSpeech CATCHME
+2023-02-20 14:50:43.891 | INFO     | utilities:benchmark_model:154 - Time: 665.81043 seconds, WER: 41.35641%, Model: small, Dataset: FTSpeech CATCHME
+2023-02-20 15:14:39.174 | INFO     | utilities:benchmark_model:154 - Time: 1417.17230 seconds, WER: 30.88839%, Model: medium, Dataset: FTSpeech CATCHME
+2023-02-20 15:46:32.736 | INFO     | utilities:benchmark_model:154 - Time: 1862.32044 seconds, WER: 26.98501%, Model: large, Dataset: FTSpeech CATCHME
