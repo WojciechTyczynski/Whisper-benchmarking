@@ -11,6 +11,7 @@ from datasets_loaders.NST_dk import NST_dk
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_11 import Common_voice_11
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
+from datasets_loaders.Rev16 import Rev16
 from datasets import load_dataset
 import numpy as np
 from tqdm import tqdm
@@ -158,6 +159,62 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     #     print(f'{j}     <>      {i}')
 
 
+def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
+    """
+    Benchmark a Whisper model on a longforms.
+    
+    Parameters
+    ----------
+    cfg : Config object
+        The configuration object.
+    options : whisper.DecodingOptions
+        The decoding options.    
+    """
+    if cfg.device == 'cuda' and not torch.cuda.is_available():
+        logger.warning("CUDA not available, using CPU instead.")
+        cfg.device = 'cpu'
+
+    if cfg.benchmark.dataset == 'rev16':
+        dataset = Rev16()
+    else:
+        logger.error("Dataset not supported.")
+        return
+    
+    if cfg.benchmark.language == 'en':
+        normalizer=EnglishTextNormalizer()
+    else:
+        normalizer=BasicTextNormalizer()
+    
+    loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers)
+    logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
+    
+    
+    if cfg.model in cfg.available_models:
+        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+        logger.info(f"Loaded {model} model.")
+    else:
+        logger.error("Model not supported.")
+        return
+
+    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
+        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
+    
+    model = model.to(cfg.device)
+    
+    hypotheses = []
+    references = []
+    start_total = time.time()
+    for audios, texts in tqdm(loader):
+        start_batch = time.time()
+        # print(audio_paths)
+        results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
+        hypotheses.extend([result.text for result in results])
+        references.extend(texts)
+        end_batch = time.time()
+    end_total = time.time()
+
+    wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
+    logger.info(f"Time: {start_total - end_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
 
 
 def benchmark_longform_time(cfg):

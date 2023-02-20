@@ -18,7 +18,12 @@ def run(cfg) -> None :
             beam_size=cfg.decode_options.beam_size
             # temperature=0,
         )
-    ut.benchmark_model(cfg, options)
+    if cfg.benchmark_type == 'default':
+        ut.benchmark_model(cfg, options)
+    elif cfg.benchmark_type == 'longform_wer':
+        ut.benchmark_longform_wer(cfg, options)
+    else:
+        logger.error("Benchmark type not supported")
 
     # check input
     # inputs = ut.input_files_list(cfg.input)
