@@ -11,7 +11,6 @@ from transcribe import transcribe
 @torch.inference_mode()
 @hydra.main(version_base=None, config_path="../conf", config_name="conf.yaml")
 def run(cfg) -> None :
-    
     os.chdir(hydra.utils.get_original_cwd())
     print(cfg.benchmark.dataset)    
     options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16,

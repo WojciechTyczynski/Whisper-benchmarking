@@ -10,7 +10,7 @@ install torch like this: \
 
 install other dependencies: \
 `pip3 install -r requirements.txt`\
-`pip install git+https://github.com/openai/whisper.git` \
+`pip install git+https://github.com/openai/whisper.git`
 
 # Usefull commands 
 start notebook on remote server

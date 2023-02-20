@@ -142,7 +142,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     # measure time
     start = time.time()
     for mels, texts in tqdm(loader):
-        results = model.decode(mels.to(cfg.device), options)
+        results = model.decode(mels.to(cfg.device).to(torch.float16), options)
         hypotheses.extend([result.text for result in results])
         references.extend(texts)
     end = time.time()
