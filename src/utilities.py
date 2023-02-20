@@ -19,6 +19,7 @@ import torch
 import ffmpeg
 from typing import BinaryIO, Union
 from time import time
+import matplotlib.pyplot as plt
 
 
 SAMPLE_RATE=16000
