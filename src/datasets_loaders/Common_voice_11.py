@@ -15,7 +15,7 @@ class Common_voice_11(torch.utils.data.Dataset):
     """
     A simple class to wrap fleurs and trim/pad the audio to 30 seconds.
     """
-    def __init__(self, split="test", device='cpu', language='da', path='/work3/s212373/common_voice_11/cv-corpus-11.0-2022-09-21/da/'):
+    def __init__(self, split="test", device='cpu', language='da', path='/work3/s212373/common_voice_11/da/'):
         self.device = device
         self.device = device
         self.path = path
