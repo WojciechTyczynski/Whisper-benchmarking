@@ -12,16 +12,23 @@ from transcribe import transcribe
 @hydra.main(version_base=None, config_path="../conf", config_name="conf.yaml")
 def run(cfg) -> None :
     os.chdir(hydra.utils.get_original_cwd())
-    print(cfg.benchmark.dataset)    
     options=whisper.DecodingOptions(fp16=cfg.decode_options.fp16,
             language=cfg.benchmark.language,
             beam_size=cfg.decode_options.beam_size
             # temperature=0,
         )
-    if cfg.benchmark_type == 'default':
+    
+    try:
+        benchmark_type = cfg.benchmark.type
+    except:
+        benchmark_type = None
+    
+    if benchmark_type == None:
         ut.benchmark_model(cfg, options)
-    elif cfg.benchmark_type == 'longform_wer':
+    elif benchmark_type == 'longform_wer':
         ut.benchmark_longform_wer(cfg, options)
+    elif benchmark_type == 'longform_time':
+        ut.benchmark_longform_time(cfg)
     else:
         logger.error("Benchmark type not supported")
 

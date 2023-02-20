@@ -236,7 +236,9 @@ def benchmark_longform_time(cfg):
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     
-    model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+    if cfg.model in cfg.available_models:
+        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+    
     logger.info(f"Loaded {model} model.")
     model = model.to(cfg.device)
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
@@ -275,7 +277,7 @@ def benchmark_longform_time(cfg):
             f.write("\n")
     
     # plot results
-    fig , ax = plt.subplots(figsize=(12, 12)
+    fig , ax = plt.subplots(figsize=(12, 12))
     ax.plot(list(results_batched.keys()), list(results_batched.values()), label='Batched')
     ax.plot(list(results_linear.keys()), list(results_linear.values()), label='Linear')
     ax.set_xlabel('Batch size')
