@@ -201,7 +201,7 @@ def benchmark_longform_time(cfg):
     results_batched[1] = results_linear[1]
 
     i = 2
-    while i < cfg.batch_size:
+    while i <= cfg.batch_size:
         logger.info(f"Batch size: {i}")
         results_linear[i] = results_linear[i//2]*2
         results_batched[i] = run(model, file_path, i)
