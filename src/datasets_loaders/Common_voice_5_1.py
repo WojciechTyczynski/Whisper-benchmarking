@@ -4,6 +4,12 @@ import torchaudio
 import whisper
 from datasets import Audio
 import pandas as pd
+import librosa
+import audioread
+
+import warnings
+warnings.filterwarnings("ignore")
+
 
 class Common_voice_5_1(torch.utils.data.Dataset):
     """
@@ -26,7 +32,9 @@ class Common_voice_5_1(torch.utils.data.Dataset):
         return len(self.dataset)
 
     def __getitem__(self, item):
-        audio, sample_rate =  torchaudio.load(self.file_names[item])
+        audio_file = audioread.audio_open(self.file_names[item])
+        audio, sample_rate = librosa.load(self.file_names[item], sr=16000)
+        audio = torch.from_numpy(audio)
         text = self.text_list[item]
         try:
             assert sample_rate == 16000
