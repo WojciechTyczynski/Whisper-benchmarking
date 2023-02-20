@@ -238,12 +238,12 @@ def benchmark_longform_time(cfg):
     
     if cfg.model in cfg.available_models:
         model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-    
-    logger.info(f"Loaded {model} model.")
+
     model = model.to(cfg.device)
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
         and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
     
+    logger.info(f"Running initial run on {file_path}.")
     # we do one initial run to warmup gpu and cache
     model.transcribe(file_path, **{"language" : cfg.benchmark.language})
 
@@ -257,6 +257,7 @@ def benchmark_longform_time(cfg):
         end = time()
         return (end - start)/60
 
+    logger.info(f"Batch size: 1")
     results_linear[1] = run(model, file_path, 1)
     results_batched[1] = results_linear[1]
 
