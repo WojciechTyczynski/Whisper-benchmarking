@@ -1,14 +1,13 @@
-from datasets import load_dataset
+import warnings
+
+import audioread
+import librosa
+import pandas as pd
 import torch
 import torchaudio
 import whisper
-from datasets import Audio
-import pandas as pd
-import librosa
-import audioread
+from datasets import Audio, load_dataset
 
-
-import warnings
 warnings.filterwarnings("ignore")
 
 class Common_voice_11(torch.utils.data.Dataset):

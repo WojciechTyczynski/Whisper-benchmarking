@@ -1,7 +1,8 @@
+import pandas as pd
 import torch
 import torchaudio
-import pandas as pd
 import whisper
+
 
 class FTSpeech(torch.utils.data.Dataset):
     """

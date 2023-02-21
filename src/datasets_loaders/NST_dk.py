@@ -1,8 +1,9 @@
+import os
+
+import pandas as pd
 import torch
-import os 
 import torchaudio
 import whisper
-import pandas as pd
 
 
 class NST_dk(torch.utils.data.Dataset):

@@ -1,13 +1,15 @@
-from fastapi import FastAPI, File, UploadFile
 from typing import Union
-from config import api_config
-from transcribe import transcribe_api
-import utilities as ut
-from loguru import logger
+
 import pandas as pd
 import uvicorn
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import HTMLResponse
+from loguru import logger
 from omegaconf import OmegaConf
+
+import utilities as ut
+from config import api_config
+from transcribe import transcribe_api
 
 app = FastAPI()
 

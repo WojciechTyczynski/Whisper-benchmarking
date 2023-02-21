@@ -1,9 +1,11 @@
+import glob
+import os
+
+import pandas as pd
 import torch
-import os 
 import torchaudio
 import whisper
-import pandas as pd
-import glob
+
 
 class Rev16(torch.utils.data.Dataset):
     """

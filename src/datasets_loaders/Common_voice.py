@@ -1,8 +1,8 @@
-from datasets import load_dataset
 import torch
 import torchaudio
 import whisper
-from datasets import Audio
+from datasets import Audio, load_dataset
+
 
 class Common_voice(torch.utils.data.Dataset):
     """

@@ -1,9 +1,12 @@
-from loguru import logger
-import whisper
+import platform
+
 import pandas as pd
 import torch
+import whisper
+from loguru import logger
+
 import utilities as ut
-import platform
+
 
 def transcribe(cfg, files):
 

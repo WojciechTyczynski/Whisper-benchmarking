@@ -1,12 +1,12 @@
-from loguru import logger
-import whisper
-import pandas as pd
-import hydra
-import torch
 import os
-import utilities as ut
-from transcribe import transcribe
 
+import hydra
+import pandas as pd
+import torch
+import whisper
+from loguru import logger
+from transcribe import transcribe
+import benchmark as bm
 
 @torch.inference_mode()
 @hydra.main(version_base=None, config_path="../conf", config_name="conf.yaml")
@@ -24,11 +24,11 @@ def run(cfg) -> None :
         benchmark_type = None
     
     if benchmark_type == None:
-        ut.benchmark_model(cfg, options)
+        bm.benchmark_model(cfg, options)
     elif benchmark_type == 'longform_wer':
-        ut.benchmark_longform_wer(cfg, options)
+        bm.benchmark_longform_wer(cfg, options)
     elif benchmark_type == 'longform_time':
-        ut.benchmark_longform_time(cfg)
+        bm.benchmark_longform_time(cfg)
     else:
         logger.error("Benchmark type not supported")
 
