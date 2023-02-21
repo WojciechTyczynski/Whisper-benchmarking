@@ -19,7 +19,8 @@ import pandas as pd
 import torch
 import ffmpeg
 from typing import BinaryIO, Union
-from time import time
+import time
+import matplotlib.pyplot as plt 
 
 
 SAMPLE_RATE=16000
@@ -126,7 +127,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         normalizer=BasicTextNormalizer()
     
     loader = torch.utils.data.DataLoader(dataset, batch_size=cfg.batch_size, num_workers=cfg.num_workers)
-    logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
+    logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances. Language {cfg.benchmark.language}")
     
     
     
@@ -184,13 +185,13 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     else:
         normalizer=BasicTextNormalizer()
     
-    loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers)
+    loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=None, batch_sampler=None)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
     if cfg.model in cfg.available_models:
         model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-        logger.info(f"Loaded {model} model.")
+        # logger.info(f"Loaded {model} model.")
     else:
         logger.error("Model not supported.")
         return
@@ -206,14 +207,18 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     for audios, texts in tqdm(loader):
         start_batch = time.time()
         # print(audio_paths)
+        print(f'Audio_file shape: {audios.shape}')
         results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
-        hypotheses.extend([result.text for result in results])
+        if isinstance(results, list):            
+            hypotheses.extend([result.text for result in results])
+        else:
+            hypotheses.extend([results['text']])
         references.extend(texts)
         end_batch = time.time()
     end_total = time.time()
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"Time: {start_total - end_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
+    logger.info(f"Time: {end_total - start_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
 
 
 def benchmark_longform_time(cfg):
