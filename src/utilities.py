@@ -240,12 +240,14 @@ def benchmark_longform_time(cfg):
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     
-    model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-    logger.info(f"Loaded {model} model.")
+    if cfg.model in cfg.available_models:
+        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+
     model = model.to(cfg.device)
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
         and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
     
+    logger.info(f"Running initial run on {file_path}.")
     # we do one initial run to warmup gpu and cache
     model.transcribe(file_path, **{"language" : cfg.benchmark.language})
 
@@ -259,6 +261,7 @@ def benchmark_longform_time(cfg):
         end = time()
         return (end - start)/60
 
+    logger.info(f"Batch size: 1")
     results_linear[1] = run(model, file_path, 1)
     results_batched[1] = results_linear[1]
 
@@ -279,11 +282,11 @@ def benchmark_longform_time(cfg):
             f.write("\n")
     
     # plot results
-    plt.plot(list(results_batched.keys()), list(results_batched.values()), label='batched')
-    plt.plot(list(results_linear.keys()), list(results_linear.values()), label='linear')
-    plt.xlabel('Batch size')
-    plt.ylabel('Time (min)')
-    plt.title(f'Batching time for {filename}')
-    plt.legend()
+    fig , ax = plt.subplots(figsize=(12, 12))
+    ax.plot(list(results_batched.keys()), list(results_batched.values()), label='Batched')
+    ax.plot(list(results_linear.keys()), list(results_linear.values()), label='Linear')
+    ax.set_xlabel('Batch size')
+    ax.set_ylabel('Time (min)')
+    ax.set_title(f'Batching time for {filename}')
+    ax.legend()
     plt.savefig(f'{"../benchmarks/batching/{filename}_time"}.png')
-
