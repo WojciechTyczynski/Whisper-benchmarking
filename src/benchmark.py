@@ -22,6 +22,7 @@ from datasets_loaders.FTSpeech import FTSpeech
 from datasets_loaders.LibriSpeech import LibriSpeech
 from datasets_loaders.NST_dk import NST_dk
 from datasets_loaders.Rev16 import Rev16
+from datasets_loaders.TEDLIUM import TEDLIUM
 from utilities import *
 
 
@@ -60,6 +61,9 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         normalizer=EnglishTextNormalizer()
     else:
         normalizer=BasicTextNormalizer()
+
+    if cfg.batch_size == -1:
+        cfg.batch_size = None 
     
     loader = torch.utils.data.DataLoader(dataset, batch_size=cfg.batch_size, num_workers=cfg.num_workers)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances. Language {cfg.benchmark.language}")
@@ -183,6 +187,8 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
 
     if cfg.benchmark.dataset == 'rev16':
         dataset = Rev16()
+    if cfg.benchmark.dataset == 'ted':
+        dataset = TEDLIUM()
     else:
         logger.error("Dataset not supported.")
         return
@@ -192,7 +198,10 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     else:
         normalizer=BasicTextNormalizer()
     
-    loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=cfg.batch_size)
+    if cfg.batch_size == -1:
+        loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=None)
+    else:
+        loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=cfg.batch_size)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
     
@@ -214,13 +223,13 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     for audios, texts in tqdm(loader):
         start_batch = time.time()
         # print(audio_paths)
-        print(f'Audio_file shape: {audios.shape}')
         results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
         if isinstance(results, list):            
-            hypotheses.extend([result.text for result in results])
+            hypotheses.extend([result['text'] for result in results])
+            references.extend(texts)
         else:
             hypotheses.extend([results['text']])
-        references.extend(texts)
+            references.extend([texts])
         end_batch = time.time()
     end_total = time.time()
 
