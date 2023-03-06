@@ -16,6 +16,7 @@ from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
 from pyannote.audio import Pipeline
 from pyannote.audio import Inference
 from huggingface_hub import login
+import json
 
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
@@ -181,9 +182,9 @@ def benchmark_longform_time(cfg):
     with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
         json.dump(results_batched_vad, f)
         with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-        json.dump(results_vad, f)
+            json.dump(results_vad, f)
         with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-        json.dump(results_linear, f)
+            json.dump(results_linear, f)
 
     
     # plot results
@@ -210,7 +211,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         The decoding options.    
     """
 
-    login(cfg.api_token)
+    login(cfg.hf_auth_token)
 
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
