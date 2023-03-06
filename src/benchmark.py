@@ -13,6 +13,10 @@ from datasets import load_dataset
 from loguru import logger
 from tqdm import tqdm
 from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
+from pyannote.audio import Pipeline
+from pyannote.audio import Inference
+from huggingface_hub import login
+import json
 
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
@@ -207,6 +211,9 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     options : whisper.DecodingOptions
         The decoding options.    
     """
+
+    login(cfg.hf_auth_token)
+
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
@@ -225,9 +232,9 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         normalizer=BasicTextNormalizer()
     
     if cfg.batch_size == -1:
-        loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=None)
-    else:
-        loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=cfg.batch_size)
+        cfg.batch_size = None
+
+    loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=None)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
 
@@ -238,6 +245,12 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         elif cfg.whisper_version == 'whisperx':
             import whisperx
             model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
+            vad_pipeline = Inference(
+                    "pyannote/segmentation",
+                    pre_aggregation_hook=lambda segmentation: segmentation,
+                    use_auth_token=True,
+                    device=torch.device(cfg.device),
+                )
     else:
         logger.error("Model not supported.")
         return
@@ -257,7 +270,8 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         if cfg.whisper_version == 'whisper':
             results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
         elif cfg.whisper_version == 'whisperx':
-            results = model.transcribe(audios)
+            results = whisperx.transcribe_with_vad_parallel(model, audios, vad_pipeline, batch_size=cfg.batch_size, **{"language" : cfg.benchmark.language, "task" : "transcribe"})
+            
             results['text'] = ''.join([x['text'] for x in results['segments']])
         if isinstance(results, list):            
             hypotheses.extend([result['text'] for result in results])
