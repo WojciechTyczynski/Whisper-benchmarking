@@ -29,11 +29,11 @@ class Rev16(torch.utils.data.Dataset):
         audio_file = self.audio_files[file_id]
         text_file = self.text_files[file_id]
         audio_file_path = f"{self.path}/{audio_file}"
-        audio = whisper.load_audio(audio_file_path)
+        # audio = whisper.load_audio(audio_file_path)
         # try:
         #     assert sample_rate == 16000
         # except:
         #      audio = torchaudio.functional.resample(audio, sample_rate, 16000)
-        with open(f"{self.path}/{text_file}") as f:
-            text = f.readlines()
-        return (audio, text)
+        with open(f"{self.path}/{text_file}", "r") as f:
+            text = f.read()
+        return (audio_file_path, text)
