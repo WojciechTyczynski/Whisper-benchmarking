@@ -11,6 +11,7 @@ benchmark_type: default
 whisper_version: whisper
 batch_size: 32
 num_workers: 12
+hf_auth_token : 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
 decode_options:
   task: transcribe
   temperature: 0.5

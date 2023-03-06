@@ -112,23 +112,36 @@ def benchmark_longform_time(cfg):
     cfg : Config object
         The configuration object.
     """
-
-
     file_path = cfg.benchmark.file
     filename = file_path.split('/')[-1].split('.')[0]
+
+    if cfg.whisper_version != 'whisperx':
+        return
+    
+    import whisperx
 
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     
     if cfg.model in cfg.available_models:
-        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+        model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
 
     model = model.to(cfg.device)
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
         and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
     
     logger.info(f"Running initial run on {file_path}.")
+    
+
+    # setting up vad for whisperx 
+    vad_pipeline = Inference(
+        "pyannote/segmentation",
+        pre_aggregation_hook=lambda segmentation: segmentation,
+        use_auth_token=cfg.hf_auth_token,
+        device=torch.device(cfg.device),
+    )
+
     # we do one initial run to warmup gpu and cache
     model.transcribe(file_path, **{"language" : cfg.benchmark.language})
 
@@ -136,36 +149,48 @@ def benchmark_longform_time(cfg):
     results_batched = {}
     results_linear = {}
 
-    def run(model, file_path, batch_size):
+    def run(model, file_path, batch_size = 1, vad_pipeline = None):
         start = time()
-        model.transcribe([file_path]*batch_size, **{"language" : cfg.benchmark.language})
+        if vad_pipeline:
+            if batch_size == 1:
+                whisperx.transcribe_with_vad(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
+            else:
+                whisperx.transcribe_with_vad_parallel(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
+        else:
+            model.transcribe(file_path, **{"language" : cfg.benchmark.language})
         end = time()
         return (end - start)/60
 
     logger.info(f"Batch size: 1")
-    results_linear[1] = run(model, file_path, 1)
-    results_batched[1] = results_linear[1]
+    results_linear[1] = run(model, file_path)
+    results_vad[1] = run(model, file_path, vad_pipeline = vad_pipeline)
+    results_batched_vad[1] = results_vad[1]
 
     i = 2
     while i <= cfg.batch_size:
         logger.info(f"Batch size: {i}")
         results_linear[i] = results_linear[i//2]*2
-        results_batched[i] = run(model, file_path, i)
+        results_vad[i] = results_vad[i//2]*2
+        results_batched_vad[i] = run(model, file_path, batch_size = i, vad_pipeline = vad_pipeline)
 
-        logger.info(f"Batc  nr. {i}: {results_batched[i]} min")
+        logger.info(f"Batc  nr. {i}: {results_batched_vad[i]} min")
         i *= 2
 
         
-    # save as csv
-    with open(f'{"../benchmarks/batching/{filename}_time"}.csv', 'w') as f:
-        for key in results.keys():
-            f.write("%s,%s" % (key, results[key]))
-            f.write("\n")
+    # save results
+    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+        json.dump(results_batched_vad, f)
+        with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+        json.dump(results_vad, f)
+        with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+        json.dump(results_linear, f)
+
     
     # plot results
     fig , ax = plt.subplots(figsize=(12, 12))
-    ax.plot(list(results_batched.keys()), list(results_batched.values()), label='Batched')
-    ax.plot(list(results_linear.keys()), list(results_linear.values()), label='Linear')
+    ax.plot(list(results_batched.keys()), list(results_batched_vad.values()), label='Batched VAD')
+    ax.plot(list(results_batched.keys()), list(results_vad.values()), label='VAD')
+    ax.plot(list(results_linear.keys()), list(results_linear.values()), label='Standard Whisper')
     ax.set_xlabel('Batch size')
     ax.set_ylabel('Time (min)')
     ax.set_title(f'Batching time for {filename}')
