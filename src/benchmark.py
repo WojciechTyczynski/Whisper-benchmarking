@@ -204,13 +204,18 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         loader = torch.utils.data.DataLoader(dataset, num_workers=cfg.num_workers, batch_size=cfg.batch_size)
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
+
     
     if cfg.model in cfg.available_models:
-        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-        # logger.info(f"Loaded {model} model.")
+        if cfg.whisper_version == 'whisper':
+            model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+        elif cfg.whisper_version == 'whisperx':
+            import whisperx
+            model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
     else:
         logger.error("Model not supported.")
         return
+    logger.info(f"Loaded {cfg.model} model - {cfg.whisper_version}.")
 
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
         and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
@@ -223,7 +228,11 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     for audios, texts in tqdm(loader):
         start_batch = time.time()
         # print(audio_paths)
-        results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
+        if cfg.whisper_version == 'whisper':
+            results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
+        elif cfg.whisper_version == 'whisperx':
+            results = model.transcribe(audios)
+            results['text'] = ''.join([x['text'] for x in results['segments']])
         if isinstance(results, list):            
             hypotheses.extend([result['text'] for result in results])
             references.extend(texts)
