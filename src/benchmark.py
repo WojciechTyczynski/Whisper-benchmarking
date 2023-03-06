@@ -29,6 +29,8 @@ from datasets_loaders.Rev16 import Rev16
 from datasets_loaders.TEDLIUM import TEDLIUM
 from utilities import *
 
+import json
+
 
 def benchmark_model(cfg, options:whisper.DecodingOptions):
     """
@@ -117,10 +119,12 @@ def benchmark_longform_time(cfg):
     filename = file_path.split('/')[-1].split('.')[0]
 
     if cfg.whisper_version != 'whisperx':
+        logger.error("Benchmarking longform audio is only supported for WhisperX.")
         return
     
     import whisperx
-
+    from pyannote.audio import Inference
+    
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
@@ -136,6 +140,7 @@ def benchmark_longform_time(cfg):
     
 
     # setting up vad for whisperx 
+    
     vad_pipeline = Inference(
         "pyannote/segmentation",
         pre_aggregation_hook=lambda segmentation: segmentation,
@@ -181,10 +186,10 @@ def benchmark_longform_time(cfg):
     # save results
     with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
         json.dump(results_batched_vad, f)
-        with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-            json.dump(results_vad, f)
-        with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-            json.dump(results_linear, f)
+    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+        json.dump(results_vad, f)
+    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+        json.dump(results_linear, f)
 
     
     # plot results

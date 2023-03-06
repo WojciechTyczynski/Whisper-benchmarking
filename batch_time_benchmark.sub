@@ -19,9 +19,9 @@ module load python3/3.9.11
 module load ffmpeg/4.4
 
 # Activate the virtual environment -> link to your own before starting 
-source /zhome/ad/4/137151/venv_2/bin/activate
+source /zhome/ad/4/137151/venv_new_torch/bin/activate
 
-MODELS="small" #tiny base small medium 
+MODELS="tiny" #tiny base small medium 
 
 for model in $MODELS
 do

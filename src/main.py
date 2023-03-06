@@ -23,6 +23,7 @@ def run(cfg) -> None :
     except:
         benchmark_type = None
     
+    logger.info(f"Running benchmark {benchmark_type}")
     if benchmark_type == None:
         bm.benchmark_model(cfg, options)
     elif benchmark_type == 'longform_wer':
