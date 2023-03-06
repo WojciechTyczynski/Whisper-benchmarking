@@ -8,6 +8,7 @@ output: ./transcribtion
 available_models: [tiny.en, tiny, base, base.en, base, small.en, small, medium.en, medium, large]
 greet_message: "Hello AI "
 benchmark_type: default
+whisper_version: whisper
 batch_size: 32
 num_workers: 12
 decode_options:
