@@ -14,7 +14,8 @@ num_workers: 12
 hf_auth_token : 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
 decode_options:
   task: transcribe
-  temperature: 0.5
+  condition_on_previous_text: True
+  temperature: 0
   best_of: 10
   fp16: true
   verbose: false
