@@ -124,31 +124,27 @@ def benchmark_longform_time(cfg):
     
     import whisperx
     from pyannote.audio import Inference
-    
+
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     
     if cfg.model in cfg.available_models:
         model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
-
-    model = model.to(cfg.device)
+        
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
-        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
-    
-    logger.info(f"Running initial run on {file_path}.")
-    
+        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.") 
 
     # setting up vad for whisperx 
-    
     vad_pipeline = Inference(
         "pyannote/segmentation",
         pre_aggregation_hook=lambda segmentation: segmentation,
         use_auth_token=cfg.hf_auth_token,
         device=torch.device(cfg.device),
     )
+    logger.info(f"VAD pipeline: {vad_pipeline}")
 
-    # we do one initial run to warmup gpu and cache
+    logger.info(f"Running initial run on {file_path}. To warm up the GPU.")
     model.transcribe(file_path, **{"language" : cfg.benchmark.language})
 
     # double batch size for each run
@@ -156,7 +152,7 @@ def benchmark_longform_time(cfg):
     results_linear = {}
 
     def run(model, file_path, batch_size = 1, vad_pipeline = None):
-        start = time()
+        start = time.time()
         if vad_pipeline:
             if batch_size == 1:
                 whisperx.transcribe_with_vad(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
@@ -164,7 +160,7 @@ def benchmark_longform_time(cfg):
                 whisperx.transcribe_with_vad_parallel(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
         else:
             model.transcribe(file_path, **{"language" : cfg.benchmark.language})
-        end = time()
+        end =time.time()
         return (end - start)/60
 
     logger.info(f"Batch size: 1")
