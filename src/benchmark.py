@@ -218,9 +218,10 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
 
+
     if cfg.benchmark.dataset == 'rev16':
         dataset = Rev16()
-    if cfg.benchmark.dataset == 'ted':
+    elif cfg.benchmark.dataset == 'ted':
         dataset = TEDLIUM()
     else:
         logger.error("Dataset not supported.")
