@@ -19,11 +19,11 @@ module load python3/3.9.11
 module load ffmpeg/4.4
 
 # Activate the virtual environment -> link to your own before starting 
-source /zhome/ad/4/137151/venv_new_torch/bin/activate
+source /zhome/ad/4/137151/whsiperx/bin/activate
 
-MODELS="tiny" #tiny base small medium 
+MODELS="large" #tiny base small medium 
 
 for model in $MODELS
 do
-    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model benchmark=longform_time batch_size=128
+    python3 /zhome/ad/4/137151/Whisper-transcribe-tool/src/main.py model=$model benchmark=longform_time batch_size=128 whisper_version=whisperx
 done

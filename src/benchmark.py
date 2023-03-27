@@ -148,56 +148,55 @@ def benchmark_longform_time(cfg):
     model.transcribe(file_path, **{"language" : cfg.benchmark.language})
 
     # double batch size for each run
-    results_batched = {}
-    results_linear = {}
+    results_batched_vad = {}
 
     def run(model, file_path, batch_size = 1, vad_pipeline = None):
         start = time.time()
         if vad_pipeline:
             if batch_size == 1:
-                whisperx.transcribe_with_vad(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
+                whisperx.transcribe_with_vad(model, file_path, vad_pipeline ,**{"language" : cfg.benchmark.language, "task": "transcribe"})
             else:
-                whisperx.transcribe_with_vad_parallel(model, file_path, **{"language" : cfg.benchmark.language, "task": "transcribe"})
+                whisperx.transcribe_with_vad_parallel(model, file_path, vad_pipeline,batch_size=batch_size ,**{"language" : cfg.benchmark.language, "task": "transcribe"})
         else:
             model.transcribe(file_path, **{"language" : cfg.benchmark.language})
         end =time.time()
-        return (end - start)/60
+        return (end - start)
 
     logger.info(f"Batch size: 1")
-    results_linear[1] = run(model, file_path)
-    results_vad[1] = run(model, file_path, vad_pipeline = vad_pipeline)
-    results_batched_vad[1] = results_vad[1]
+    result_standard = run(model, file_path)
+    results_vad = run(model, file_path, vad_pipeline = vad_pipeline)
+    results_batched_vad[1] = results_vad
 
     i = 2
     while i <= cfg.batch_size:
         logger.info(f"Batch size: {i}")
-        results_linear[i] = results_linear[i//2]*2
-        results_vad[i] = results_vad[i//2]*2
         results_batched_vad[i] = run(model, file_path, batch_size = i, vad_pipeline = vad_pipeline)
-
         logger.info(f"Batc  nr. {i}: {results_batched_vad[i]} min")
         i *= 2
 
         
-    # save results
-    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-        json.dump(results_batched_vad, f)
-    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-        json.dump(results_vad, f)
-    with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-        json.dump(results_linear, f)
+    # # save results
+    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+    #     json.dump(results_batched_vad, f)
+    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+    #     json.dump(results_vad, f)
+    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
+    #     json.dump(results_linear, f)
 
-    
+
     # plot results
     fig , ax = plt.subplots(figsize=(12, 12))
-    ax.plot(list(results_batched.keys()), list(results_batched_vad.values()), label='Batched VAD')
-    ax.plot(list(results_batched.keys()), list(results_vad.values()), label='VAD')
-    ax.plot(list(results_linear.keys()), list(results_linear.values()), label='Standard Whisper')
+    ax.plot(list(results_batched_vad.keys()), list(results_batched_vad.values()), label='Batched VAD')
+    
+    # plot horizontal line for standard and vad
+    ax.axhline(y=result_standard, color='r', linestyle='-', label='Standard')
+    ax.axhline(y=results_vad, color='g', linestyle='-', label='VAD')
+
     ax.set_xlabel('Batch size')
-    ax.set_ylabel('Time (min)')
+    ax.set_ylabel('Time (s)')
     ax.set_title(f'Batching time for {filename}')
     ax.legend()
-    plt.savefig(f'{"../benchmarks/batching/{filename}_time"}.png')
+    plt.savefig(f'{"./{filename}_time"}.png')
 
 
 def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
