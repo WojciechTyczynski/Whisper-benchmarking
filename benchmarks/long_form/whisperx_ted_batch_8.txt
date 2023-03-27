@@ -1,0 +1,9 @@
+2023-03-06 14:01:30.085 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 80.33872 seconds, WER: 14.18749%, Model: tiny, Dataset: ted CATCHME
+2023-03-06 14:03:19.617 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 72.65843 seconds, WER: 13.34042%, Model: tiny.en, Dataset: ted CATCHME
+2023-03-06 14:05:30.637 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 82.99413 seconds, WER: 13.40067%, Model: base, Dataset: ted CATCHME
+2023-03-06 14:07:19.770 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 81.49621 seconds, WER: 11.00124%, Model: base.en, Dataset: ted CATCHME
+2023-03-06 14:09:44.884 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 112.42870 seconds, WER: 11.58249%, Model: small, Dataset: ted CATCHME
+2023-03-06 14:12:10.102 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 112.79122 seconds, WER: 10.77441%, Model: small.en, Dataset: ted CATCHME
+2023-03-06 14:15:56.766 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 174.74267 seconds, WER: 11.40883%, Model: medium, Dataset: ted CATCHME
+2023-03-06 14:20:48.866 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 171.72613 seconds, WER: 11.99008%, Model: medium.en, Dataset: ted CATCHME
+2023-03-06 14:25:47.215 | INFO     | benchmark:benchmark_longform_wer:259 - Time: 233.62028 seconds, WER: 9.84937%, Model: large, Dataset: ted CATCHME

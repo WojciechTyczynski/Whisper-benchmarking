@@ -217,9 +217,10 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
 
+
     if cfg.benchmark.dataset == 'rev16':
         dataset = Rev16()
-    if cfg.benchmark.dataset == 'ted':
+    elif cfg.benchmark.dataset == 'ted':
         dataset = TEDLIUM()
     else:
         logger.error("Dataset not supported.")
@@ -253,7 +254,8 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     else:
         logger.error("Model not supported.")
         return
-    logger.info(f"Loaded {cfg.model} model - {cfg.whisper_version}.")
+    logger.info(f"Loaded {cfg.model} model - {cfg.whisper_version}. \
+                 Condition on previous text: {cfg.decode_options.condition_on_previous_text}")
 
     logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
         and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
@@ -267,9 +269,13 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         start_batch = time.time()
         # print(audio_paths)
         if cfg.whisper_version == 'whisper':
-            results = model.transcribe(audios, **{"language" : cfg.benchmark.language})
+            results = model.transcribe(audios,
+                                    condition_on_previous_text = cfg.decode_options.condition_on_previous_text,
+                                    **{"language" : cfg.benchmark.language})
         elif cfg.whisper_version == 'whisperx':
-            results = whisperx.transcribe_with_vad_parallel(model, audios, vad_pipeline, batch_size=cfg.batch_size, **{"language" : cfg.benchmark.language, "task" : "transcribe"})
+            results = whisperx.transcribe_with_vad_parallel(model,audios, vad_pipeline,
+                                                            batch_size=cfg.batch_size,
+                                                            **{"language" : cfg.benchmark.language, "task" : "transcribe"})
             
             results['text'] = ''.join([x['text'] for x in results['segments']])
         if isinstance(results, list):            
