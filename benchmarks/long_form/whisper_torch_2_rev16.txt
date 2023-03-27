@@ -1,0 +1,9 @@
+2023-03-19 18:31:06.097 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 1053.87430 seconds, WER: 16.75713%, Model: tiny, Dataset: rev16 CATCHME
+2023-03-19 18:47:58.777 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 993.06837 seconds, WER: 14.80905%, Model: tiny.en, Dataset: rev16 CATCHME
+2023-03-19 19:11:05.202 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 1365.38094 seconds, WER: 14.17381%, Model: base, Dataset: rev16 CATCHME
+2023-03-19 19:34:01.836 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 1354.32034 seconds, WER: 13.22862%, Model: base.en, Dataset: rev16 CATCHME
+2023-03-19 20:15:31.638 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 2464.82787 seconds, WER: 12.07866%, Model: small, Dataset: rev16 CATCHME
+2023-03-19 20:57:15.259 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 2475.89514 seconds, WER: 11.69568%, Model: small.en, Dataset: rev16 CATCHME
+2023-03-19 22:14:48.538 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 4614.77816 seconds, WER: 11.59304%, Model: medium, Dataset: rev16 CATCHME
+2023-03-19 23:31:13.907 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 4545.59213 seconds, WER: 11.80240%, Model: medium.en, Dataset: rev16 CATCHME
+2023-03-20 01:15:20.325 | INFO     | benchmark:benchmark_longform_wer:292 - Time: 6184.53543 seconds, WER: 18.37944%, Model: large, Dataset: rev16 CATCHME

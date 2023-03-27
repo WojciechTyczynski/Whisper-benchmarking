@@ -1,0 +1,9 @@
+2023-02-20 14:02:00.598 | INFO     | utilities:benchmark_model:155 - Time: 22.51182 seconds, WER: 16.23363%, Model: tiny, Dataset: fleurs CATCHME
+2023-02-20 14:02:43.111 | INFO     | utilities:benchmark_model:155 - Time: 25.38886 seconds, WER: 12.11569%, Model: base, Dataset: fleurs CATCHME
+2023-02-20 14:03:40.735 | INFO     | utilities:benchmark_model:155 - Time: 36.03894 seconds, WER: 9.58751%, Model: small, Dataset: fleurs CATCHME
+2023-02-20 14:05:26.891 | INFO     | utilities:benchmark_model:155 - Time: 71.22751 seconds, WER: 6.33098%, Model: medium, Dataset: fleurs CATCHME
+2023-02-20 14:05:59.408 | INFO     | utilities:benchmark_model:155 - Time: 15.08302 seconds, WER: 12.73198%, Model: tiny.en, Dataset: fleurs CATCHME
+2023-02-20 14:06:36.323 | INFO     | utilities:benchmark_model:155 - Time: 18.72259 seconds, WER: 9.36340%, Model: base.en, Dataset: fleurs CATCHME
+2023-02-20 14:07:34.097 | INFO     | utilities:benchmark_model:155 - Time: 34.38723 seconds, WER: 7.58456%, Model: small.en, Dataset: fleurs CATCHME
+2023-02-20 14:09:22.463 | INFO     | utilities:benchmark_model:155 - Time: 72.16424 seconds, WER: 6.49205%, Model: medium.en, Dataset: fleurs CATCHME
+2023-02-20 14:11:49.188 | INFO     | utilities:benchmark_model:155 - Time: 117.31424 seconds, WER: 5.98081%, Model: large, Dataset: fleurs CATCHME

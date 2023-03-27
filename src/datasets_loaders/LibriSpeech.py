@@ -12,7 +12,7 @@ class LibriSpeech(torch.utils.data.Dataset):
     """
     def __init__(self, split="test-clean", device='cpu'):
         self.dataset = torchaudio.datasets.LIBRISPEECH(
-            root=os.path.expanduser("~/.cache"),
+            root=os.path.expanduser("/work3/s183954"),
             url=split,
             download=True,
         )

@@ -53,8 +53,8 @@ def load_common_voice():
     # download_config = DownloadConfig(cache_dir='/work3/s212373/datasets')
 
     common_voice = DatasetDict()
-    common_voice["train"] = datasets.load_dataset("mozilla-foundation/common_voice_11_0", "da", split="train+validation", use_auth_token=True, cache_dir='/work3/s212373/datasets')
-    common_voice["test"] = datasets.load_dataset("mozilla-foundation/common_voice_11_0", "da", split="test", use_auth_token=True, cache_dir='/work3/s212373/datasets')
+    common_voice["train"] = datasets.load_dataset("mozilla-foundation/common_voice_11_0", "da", split="train+validation", use_auth_token=True, cache_dir='/work3/s212373/datasets2')
+    common_voice["test"] = datasets.load_dataset("mozilla-foundation/common_voice_11_0", "da", split="test", use_auth_token=True, cache_dir='/work3/s212373/datasets2')
     common_voice = common_voice.remove_columns(["accent", "age", "client_id", "down_votes", "gender", "locale", "path", "segment", "up_votes"])
     common_voice = common_voice.cast_column("audio", Audio(sampling_rate=16000))
     return common_voice
@@ -63,8 +63,8 @@ def train(cfg, dataset, model, data_collator, processor, compute_metrics):
     
     training_args = Seq2SeqTrainingArguments(
     output_dir=cfg.output_dir,  # change to a repo name of your choice
-    per_device_train_batch_size=16,
-    gradient_accumulation_steps=1,  # increase by 2x for every 2x decrease in batch size
+    per_device_train_batch_size=8,
+    gradient_accumulation_steps=2,  # increase by 2x for every 2x decrease in batch size
     learning_rate=1e-5,
     warmup_steps=500,
     max_steps=4000,
@@ -74,8 +74,8 @@ def train(cfg, dataset, model, data_collator, processor, compute_metrics):
     per_device_eval_batch_size=8,
     predict_with_generate=True,
     generation_max_length=225,
-    save_steps=500,
-    eval_steps=500,
+    save_steps=1000,
+    eval_steps=1000,
     logging_steps=25,
     report_to=["tensorboard"],
     load_best_model_at_end=True,
@@ -103,7 +103,7 @@ def train(cfg, dataset, model, data_collator, processor, compute_metrics):
     "dataset_args": "config: da, split: test",
     "language": "da",
     "model_name": f"Whisper {cfg.model} - {cfg.language} - Wojty",  # a 'pretty' name for our model
-    "finetuned_from": "openai/whisper-small",
+    "finetuned_from": "openai/whisper-{cfg.model} ",
     "tasks": "automatic-speech-recognition",
     "tags": "hf-asr-leaderboard",
     }
@@ -114,10 +114,10 @@ def train(cfg, dataset, model, data_collator, processor, compute_metrics):
 @hydra.main(version_base=None, config_path="../conf", config_name="conf_ft.yaml")
 def run(cfg) -> None:
     login(cfg.api_token)
+    metric = evaluate.load("wer")
 
     def compute_metrics(pred):
-        metric = evaluate.load("wer")
-
+        
         pred_ids = pred.predictions
         label_ids = pred.label_ids
 
@@ -128,8 +128,9 @@ def run(cfg) -> None:
         pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
         label_str = tokenizer.batch_decode(label_ids, skip_special_tokens=True)
 
+        
         wer = 100 * metric.compute(predictions=pred_str, references=label_str)
-
+        logger.info(f'Predicted: {pred_str}    True: {label_str}   WER: {wer}')
         return {"wer": wer}
     
     def prepare_dataset(batch):

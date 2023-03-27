@@ -1,0 +1,5 @@
+2023-02-20 13:45:51.712 | INFO     | utilities:benchmark_model:155 - Time: 37.74766 seconds, WER: 76.79325%, Model: tiny, Dataset: Common_voice CATCHME
+2023-02-20 13:46:29.877 | INFO     | utilities:benchmark_model:155 - Time: 22.97314 seconds, WER: 65.82278%, Model: base, Dataset: Common_voice CATCHME
+2023-02-20 13:47:10.239 | INFO     | utilities:benchmark_model:155 - Time: 22.70321 seconds, WER: 36.70886%, Model: small, Dataset: Common_voice CATCHME
+2023-02-20 13:48:07.710 | INFO     | utilities:benchmark_model:155 - Time: 25.64269 seconds, WER: 23.90999%, Model: medium, Dataset: Common_voice CATCHME
+2023-02-20 13:49:26.390 | INFO     | utilities:benchmark_model:155 - Time: 29.00484 seconds, WER: 18.56540%, Model: large, Dataset: Common_voice CATCHME

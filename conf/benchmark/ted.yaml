@@ -1,0 +1,3 @@
+dataset: "ted"
+language: "en"
+type: "longform_wer"

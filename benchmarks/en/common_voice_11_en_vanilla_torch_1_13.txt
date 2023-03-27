@@ -1,0 +1,9 @@
+2023-02-21 00:15:26.285 | INFO     | utilities:benchmark_model:156 - Time: 57.86167 seconds, WER: 29.74720%, Model: tiny, Dataset: Common_voice CATCHME
+2023-02-21 00:16:25.306 | INFO     | utilities:benchmark_model:156 - Time: 44.49775 seconds, WER: 25.77746%, Model: tiny.en, Dataset: Common_voice CATCHME
+2023-02-21 00:17:43.873 | INFO     | utilities:benchmark_model:156 - Time: 64.14807 seconds, WER: 24.80119%, Model: base, Dataset: Common_voice CATCHME
+2023-02-21 00:19:01.162 | INFO     | utilities:benchmark_model:156 - Time: 62.37524 seconds, WER: 20.21077%, Model: base.en, Dataset: Common_voice CATCHME
+2023-02-21 00:20:30.027 | INFO     | utilities:benchmark_model:156 - Time: 70.15093 seconds, WER: 14.24969%, Model: small, Dataset: Common_voice CATCHME
+2023-02-21 00:22:11.170 | INFO     | utilities:benchmark_model:156 - Time: 81.78774 seconds, WER: 15.62035%, Model: small.en, Dataset: Common_voice CATCHME
+2023-02-21 00:24:51.088 | INFO     | utilities:benchmark_model:156 - Time: 127.68093 seconds, WER: 11.00407%, Model: medium, Dataset: Common_voice CATCHME
+2023-02-21 00:27:28.278 | INFO     | utilities:benchmark_model:156 - Time: 124.69383 seconds, WER: 11.46958%, Model: medium.en, Dataset: Common_voice CATCHME
+2023-02-21 00:31:35.885 | INFO     | utilities:benchmark_model:156 - Time: 195.98633 seconds, WER: 9.84031%, Model: large, Dataset: Common_voice CATCHME
