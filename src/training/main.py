@@ -9,7 +9,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch import nn
 from tqdm import tqdm
 
-from NST_dk_train import NST_dk
+# from NST_dk_train import NST_dk
+from common_voice_train import Common_voice_11
 from train import Config, WhisperModelModule
 
 BATCH_SIZE = 2
@@ -60,11 +61,11 @@ def main():
         max_epochs=cfg.num_train_epochs,
         accumulate_grad_batches=cfg.gradient_accumulation_steps,
         logger=tflogger,
-        callbacks=callback_list,
+        callbacks=callback_list
     )
 
-    train_set = NST_dk(wtokenizer, split="train")
-    eval_set = NST_dk(wtokenizer, split="test")
+    train_set = Common_voice_11(wtokenizer, split="train")
+    eval_set = Common_voice_11(wtokenizer, split="test")
     model = WhisperModelModule(cfg, wtokenizer, train_set, eval_set, model_name, lang)
 
     trainer.fit(model)
