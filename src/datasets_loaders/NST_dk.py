@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import torch
-import torchaudio
 import whisper
 
 
@@ -37,7 +36,7 @@ class NST_dk(torch.utils.data.Dataset):
         if self.split != "train":
             file_name = file_name.split("_")[1]
         file_path = f"{self.path}{folder}/{file_name.lower()}"
-        audio, sample_rate = torchaudio.load(file_path)
+        audio, sample_rate = whisper.load_audio(file_path)
         assert sample_rate == 16000
         audio = whisper.pad_or_trim(audio.flatten()).to(self.device)
         mel = whisper.log_mel_spectrogram(audio)

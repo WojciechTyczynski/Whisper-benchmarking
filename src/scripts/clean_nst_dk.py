@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import torchaudio
 from tqdm import tqdm
-
+from whisper.audio import load_audio
 
 def main():
     
@@ -29,7 +29,7 @@ def main():
             continue
         file_path = f"{path}dk/{folder}{file_name.lower()}"
         try:
-            torchaudio.load(file_path)
+            load_audio(file_path)
         except:
             index_list.append(index)
             # print(f"File {file_name} does not exist")
@@ -63,7 +63,7 @@ def main():
         file_name = file_name.split('_')[1]
         file_path = f"{path}{folder}{file_name.lower()}"
         try:
-            torchaudio.load(file_path)
+            load_audio(file_path)
         except:
             index_list.append(index)
             # print(f"File {file_name} does not exist")
