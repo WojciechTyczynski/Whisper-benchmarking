@@ -6,6 +6,9 @@ model: small
 input: ./data
 output: ./transcribtion
 available_models: [tiny.en, tiny, base, base.en, base, small.en, small, medium.en, medium, large]
+huggingface: true
+finetuned_model: False
+finetuned_model_path: /work3/s183954/output/best_model.pt
 greet_message: "Hello AI "
 benchmark_type: default
 whisper_version: whisper

@@ -17,6 +17,8 @@ from pyannote.audio import Pipeline
 from pyannote.audio import Inference
 from huggingface_hub import login
 import json
+from transformers import WhisperTokenizerFast, WhisperProcessor, WhisperForConditionalGeneration
+
 
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
@@ -30,6 +32,64 @@ from datasets_loaders.TEDLIUM import TEDLIUM
 from utilities import *
 
 import json
+
+language_dict = {
+    'da': 'danish',
+    'en': 'english',
+    'fr': 'french',
+}
+
+
+
+def run_huggingface_benchmark(cfg, options, loader, normalizer):
+    logger.info("Running benchmark with HuggingFace models.")
+    processor = WhisperProcessor.from_pretrained(f"openai/whisper-{cfg.model}")
+    model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-{cfg.model}").to(cfg.device)
+    logger.info(f"Loaded model.")
+    forced_decoder_ids = processor.get_decoder_prompt_ids(language=language_dict[cfg.benchmark.language], task="transcribe")
+
+
+    hypotheses = []
+    references = []
+
+    for mels, texts in tqdm(loader):
+        predicted_ids = model.generate(mels.to(cfg.device), forced_decoder_ids=forced_decoder_ids)
+        # decode token ids to text
+        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        hypotheses.extend(transcription)
+        references.extend(texts)
+    
+    return hypotheses, references
+
+
+    
+def run_whisper_benchmark(cfg, options, loader, normalizer):
+    logger.info("Running benchmark with Whisper models.")
+    if cfg.model in cfg.available_models and cfg.finetuned_model == False:
+        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+    elif cfg.finetuned_model:
+        model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
+        logger.info(f"Loaded finetuned model") 
+    else:
+        logger.error("Model not supported.")
+        return
+    
+    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
+        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
+    
+    model = model.to(cfg.device)
+
+    hypotheses = []
+    references = []
+    # measure time
+    start = time.time()
+    for mels, texts in tqdm(loader):
+        results = model.decode(mels.to(cfg.device).to(torch.float16), options)
+        hypotheses.extend([result.text for result in results])
+        references.extend(texts)
+    end = time.time()
+
+    return hypotheses, references
 
 
 def benchmark_model(cfg, options:whisper.DecodingOptions):
@@ -76,30 +136,15 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     
     
     
-    if cfg.model in cfg.available_models:
-        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-        logger.info(f"Loaded {model} model.")
+    if cfg.huggingface == True:
+        hypotheses, references = run_huggingface_benchmark(cfg, options, loader, normalizer)
     else:
-        logger.error("Model not supported.")
-        return
-    
-    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
-        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
-    
-    model = model.to(cfg.device)
+        hypotheses, references = run_whisper_benchmark(cfg, options, loader, normalizer)
 
-    hypotheses = []
-    references = []
-    # measure time
-    start = time.time()
-    for mels, texts in tqdm(loader):
-        results = model.decode(mels.to(cfg.device).to(torch.float16), options)
-        hypotheses.extend([result.text for result in results])
-        references.extend(texts)
-    end = time.time()
+    
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"Time: {end - start:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
+    logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, Huggingface: {cfg.huggingface} CATCHME")
     # for i,j in zip(hypotheses, references):
     #     print(f'{j}     <>      {i}')
 
