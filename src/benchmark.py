@@ -17,7 +17,7 @@ from pyannote.audio import Pipeline
 from pyannote.audio import Inference
 from huggingface_hub import login
 import json
-from transformers import WhisperTokenizerFast, WhisperProcessor, WhisperForConditionalGeneration
+from transformers import WhisperProcessor, WhisperForConditionalGeneration, AutoProcessor, WhisperTokenizer, pipeline
 
 
 from datasets_loaders.Common_voice import Common_voice
@@ -40,58 +40,6 @@ language_dict = {
 }
 
 
-
-def run_huggingface_benchmark(cfg, options, loader, normalizer):
-    logger.info("Running benchmark with HuggingFace models.")
-    processor = WhisperProcessor.from_pretrained(f"openai/whisper-{cfg.model}")
-    model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-{cfg.model}").to(cfg.device)
-    logger.info(f"Loaded model.")
-    forced_decoder_ids = processor.get_decoder_prompt_ids(language=language_dict[cfg.benchmark.language], task="transcribe")
-
-
-    hypotheses = []
-    references = []
-
-    for mels, texts in tqdm(loader):
-        predicted_ids = model.generate(mels.to(cfg.device), forced_decoder_ids=forced_decoder_ids)
-        # decode token ids to text
-        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
-        hypotheses.extend(transcription)
-        references.extend(texts)
-    
-    return hypotheses, references
-
-
-    
-def run_whisper_benchmark(cfg, options, loader, normalizer):
-    logger.info("Running benchmark with Whisper models.")
-    if cfg.model in cfg.available_models and cfg.finetuned_model == False:
-        model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-    elif cfg.finetuned_model:
-        model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
-        logger.info(f"Loaded finetuned model") 
-    else:
-        logger.error("Model not supported.")
-        return
-    
-    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
-        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
-    
-    model = model.to(cfg.device)
-
-    hypotheses = []
-    references = []
-    # measure time
-    start = time.time()
-    for mels, texts in tqdm(loader):
-        results = model.decode(mels.to(cfg.device).to(torch.float16), options)
-        hypotheses.extend([result.text for result in results])
-        references.extend(texts)
-    end = time.time()
-
-    return hypotheses, references
-
-
 def benchmark_model(cfg, options:whisper.DecodingOptions):
     """
     Benchmark a Whisper model on a dataset.
@@ -103,6 +51,61 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     options : whisper.DecodingOptions
         The decoding options.    
     """
+
+    def run_huggingface_benchmark(cfg, options, loader):
+        logger.info("Running benchmark with HuggingFace models.")
+        processor = WhisperProcessor.from_pretrained(f"openai/whisper-{cfg.model}")
+        model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-{cfg.model}").to(cfg.device)
+        # convert model to fp16
+        model = model.half()
+
+        logger.info(f"Loaded model.")
+        forced_decoder_ids = processor.get_decoder_prompt_ids(language=language_dict[cfg.benchmark.language], task="transcribe")
+
+
+        hypotheses = []
+        references = []
+
+        for mels, texts in tqdm(loader):
+            predicted_ids = model.generate(mels.to(cfg.device).to(torch.float16), forced_decoder_ids=forced_decoder_ids)
+            # decode token ids to text
+            transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
+            hypotheses.extend(transcription)
+            references.extend(texts)
+        
+        return hypotheses, references
+
+
+    
+    def run_whisper_benchmark(cfg, options, loader):
+        logger.info("Running benchmark with Whisper models.")
+        if cfg.model in cfg.available_models and cfg.finetuned_model == False:
+            model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+        elif cfg.finetuned_model:
+            model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
+            logger.info(f"Loaded finetuned model") 
+        else:
+            logger.error("Model not supported.")
+            return
+        
+        logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
+            and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
+        
+        model = model.to(cfg.device)
+
+        hypotheses = []
+        references = []
+        # measure time
+        start = time.time()
+        for mels, texts in tqdm(loader):
+            results = model.decode(mels.to(cfg.device).to(torch.float16), options)
+            hypotheses.extend([result.text for result in results])
+            references.extend(texts)
+        end = time.time()
+
+        return hypotheses, references
+
+
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
@@ -135,11 +138,10 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances. Language {cfg.benchmark.language}")
     
     
-    
     if cfg.huggingface == True:
-        hypotheses, references = run_huggingface_benchmark(cfg, options, loader, normalizer)
+        hypotheses, references = run_huggingface_benchmark(cfg, options, loader)
     else:
-        hypotheses, references = run_whisper_benchmark(cfg, options, loader, normalizer)
+        hypotheses, references = run_whisper_benchmark(cfg, options, loader)
 
     
 
@@ -256,7 +258,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         The decoding options.    
     """
 
-    login(cfg.hf_auth_token)
+    # login(cfg.hf_auth_token)
 
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
@@ -283,54 +285,102 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
 
-    
-    if cfg.model in cfg.available_models:
-        if cfg.whisper_version == 'whisper':
+    def run_whisper_longform_benchmark(cfg,loader):
+        if cfg.model in cfg.available_models:
             model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
-        elif cfg.whisper_version == 'whisperx':
-            import whisperx
-            model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
-            vad_pipeline = Inference(
-                    "pyannote/segmentation",
-                    pre_aggregation_hook=lambda segmentation: segmentation,
-                    use_auth_token=True,
-                    device=torch.device(cfg.device),
-                )
-    else:
-        logger.error("Model not supported.")
-        return
-    logger.info(f"Loaded {cfg.model} model - {cfg.whisper_version}. \
-                 Condition on previous text: {cfg.decode_options.condition_on_previous_text}")
+        else:
+            logger.error("Model not supported.")
+            return
+        logger.info(f"Loaded {cfg.model}")
 
-    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
-        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.")
-    
-    model = model.to(cfg.device)
-    
-    hypotheses = []
-    references = []
-    start_total = time.time()
-    for audios, texts in tqdm(loader):
-        start_batch = time.time()
-        # print(audio_paths)
-        if cfg.whisper_version == 'whisper':
-            results = model.transcribe(audios,
+        logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'}")
+
+        model.to(torch.device(cfg.device))
+        logger.info(f"Running benchmark on {cfg.device}")
+
+        hypotheses = []
+        references = []
+
+        for audio, text in tqdm(loader):
+            results = model.transcribe(audio,
                                     condition_on_previous_text = cfg.decode_options.condition_on_previous_text,
                                     **{"language" : cfg.benchmark.language})
-        elif cfg.whisper_version == 'whisperx':
-            results = whisperx.transcribe_with_vad_parallel(model,audios, vad_pipeline,
+            hypotheses.extend([results['text']])
+            references.extend([text])
+
+        return hypotheses, references
+
+    def run_whsiperx_longform_benchmark(cfg,loader):
+        import whisperx
+        model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
+        vad_pipeline = Inference(
+                "pyannote/segmentation",
+                pre_aggregation_hook=lambda segmentation: segmentation,
+                use_auth_token=True,
+                device=torch.device(cfg.device),
+            )
+        
+        logger.info(f"Loaded {cfg.model}")
+        model = model.to(cfg.device)
+
+        hypotheses = []
+        references = []
+        for audio, text in tqdm(loader):
+            results = whisperx.transcribe_with_vad_parallel(model,audio, vad_pipeline,
                                                             batch_size=cfg.batch_size,
                                                             **{"language" : cfg.benchmark.language, "task" : "transcribe"})
             
             results['text'] = ''.join([x['text'] for x in results['segments']])
-        if isinstance(results, list):            
             hypotheses.extend([result['text'] for result in results])
-            references.extend(texts)
+            references.extend(text)
+
+        return hypotheses, references
+    
+
+    def run_huggingface_longform_benchmark(cfg,loader):
+        logger.info(f"Running benchmark {cfg.whisper_version} on {cfg.device}")
+        pipe = pipeline(
+            "automatic-speech-recognition",
+            model=f"openai/whisper-{cfg.model}",
+            device=f"{cfg.device}:0",
+            torch_dtype=torch.float16,
+        )
+        
+        hypotheses = []
+        references = []
+        language_token = f"<|{cfg.benchmark.language}|>"
+        if cfg.model.split('.')[1] == 'en':
+            generate_kwargs = {"task":"transcribe", "no_repeat_ngram_size":5}
         else:
+            generate_kwargs = {"task":"transcribe", "language":language_token, "no_repeat_ngram_size":5}
+
+
+        for audio, text in tqdm(loader):
+            if cfg.batch_size == None:
+                results = pipe(audio, chunk_length_s=30,
+                            generate_kwargs = generate_kwargs)
+            else:    
+                results = pipe(
+                    audio, return_timestamps=True, chunk_length_s=30, stride_length_s=[6,0], batch_size=cfg.batch_size,
+                    generate_kwargs = generate_kwargs
+                )
             hypotheses.extend([results['text']])
-            references.extend([texts])
-        end_batch = time.time()
-    end_total = time.time()
+            references.extend([text])
+        
+        return hypotheses, references
+
+
+    
+    if cfg.whisper_version == 'whisper':
+        hypotheses, references = run_whisper_longform_benchmark(cfg,loader)
+    elif cfg.whisper_version == 'whisperx':
+        hypotheses, references = run_whsiperx_longform_benchmark(cfg,loader)
+    elif cfg.whisper_version == 'huggingface':
+        hypotheses, references = run_huggingface_longform_benchmark(cfg,loader)
+    else:
+        logger.error("Model not supported.")
+        return
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"Time: {end_total - start_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
+    #logger.info(f"Time: {end_total - start_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
+    logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version}, batch_size: {cfg.batch_size} CATCHME")
