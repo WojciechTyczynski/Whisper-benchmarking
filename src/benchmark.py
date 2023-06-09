@@ -19,7 +19,6 @@ from huggingface_hub import login
 import json
 from transformers import WhisperProcessor, WhisperForConditionalGeneration, AutoProcessor, WhisperTokenizer, pipeline
 
-os.environ['TRANSFORMERS_CACHE'] = "/work3/s183954/transformers_cache"
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
 from datasets_loaders.Common_voice_11 import Common_voice_11
@@ -350,7 +349,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         references = []
         language_token = f"<|{cfg.benchmark.language}|>"
         if "en" in cfg.model:
-            generate_kwargs = {"task":"transcribe", "no_repeat_ngram_size":5}
+            generate_kwargs = {"no_repeat_ngram_size":5}
         else:
             generate_kwargs = {"task":"transcribe", "language":language_token, "no_repeat_ngram_size":5}
 
