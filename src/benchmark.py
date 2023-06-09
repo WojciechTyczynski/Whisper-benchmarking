@@ -28,6 +28,7 @@ from datasets_loaders.LibriSpeech import LibriSpeech
 from datasets_loaders.NST_dk import NST_dk
 from datasets_loaders.Rev16 import Rev16
 from datasets_loaders.TEDLIUM import TEDLIUM
+from datasets_loaders.HCAndersen import HCAndersen
 from utilities import *
 
 import json
@@ -268,6 +269,8 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         dataset = Rev16()
     elif cfg.benchmark.dataset == 'ted':
         dataset = TEDLIUM()
+    elif cfg.benchmark.dataset == 'HCAndersen':
+        dataset = HCAndersen()
     else:
         logger.error("Dataset not supported.")
         return

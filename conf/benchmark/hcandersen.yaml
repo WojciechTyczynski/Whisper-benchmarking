@@ -1,0 +1,3 @@
+dataset: "HCAndersen" 
+language: "da"
+type: "longform_wer"
