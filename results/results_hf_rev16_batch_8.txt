@@ -1,0 +1,18 @@
+2023-06-09 13:39:00.830 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 13:47:15.743 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 19.67646%, Model: tiny, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 13:47:34.159 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 13:54:54.523 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 17.92395%, Model: tiny.en, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 13:55:10.257 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 14:04:32.893 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 16.99714%, Model: base, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 14:04:48.509 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 14:13:50.894 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 15.82573%, Model: base.en, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 14:14:06.527 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 14:26:17.063 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 14.73194%, Model: small, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 14:26:36.683 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 14:38:37.622 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 14.49909%, Model: small.en, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 14:38:53.221 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 14:59:24.153 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 14.01092%, Model: medium, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 14:59:39.798 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 15:20:04.082 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 13.81381%, Model: medium.en, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
+2023-06-09 15:20:20.767 | INFO     | benchmark:benchmark_longform_wer:287 - Loaded rev16 dataset with 16 utterances.
+2023-06-09 15:47:32.911 | INFO     | benchmark:benchmark_longform_wer:388 - WER: 14.26675%, Model: large, Dataset: rev16, whisper_version: huggingface, batch_size: 8 CATCHME
