@@ -40,6 +40,9 @@ language_dict = {
 }
 
 
+whisper_cache_dir = "/work3/s183954/whisper"
+
+
 def benchmark_model(cfg, options:whisper.DecodingOptions):
     """
     Benchmark a Whisper model on a dataset.
@@ -80,7 +83,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     def run_whisper_benchmark(cfg, options, loader):
         logger.info("Running benchmark with Whisper models.")
         if cfg.model in cfg.available_models and cfg.finetuned_model == False:
-            model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+            model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
         elif cfg.finetuned_model:
             model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
             logger.info(f"Loaded finetuned model") 
@@ -163,87 +166,90 @@ def benchmark_longform_time(cfg):
         The configuration object.
     """
     file_path = cfg.benchmark.file
-    filename = file_path.split('/')[-1].split('.')[0]
 
-    if cfg.whisper_version != 'whisperx':
-        logger.error("Benchmarking longform audio is only supported for WhisperX.")
+    # check if exist 
+    if not os.path.exists(file_path):
+        logger.error(f"File {file_path} does not exist.")
         return
-    
-    import whisperx
-    from pyannote.audio import Inference
 
     if cfg.device == 'cuda' and not torch.cuda.is_available():
         logger.warning("CUDA not available, using CPU instead.")
         cfg.device = 'cpu'
     
-    if cfg.model in cfg.available_models:
-        model = whisperx.load_model(cfg.model, device=torch.device(cfg.device))
-        
-    logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'} \
-        and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters.") 
+    if cfg.batch_size == -1:
+        cfg.batch_size = None
 
-    # setting up vad for whisperx 
-    vad_pipeline = Inference(
-        "pyannote/segmentation",
-        pre_aggregation_hook=lambda segmentation: segmentation,
-        use_auth_token=cfg.hf_auth_token,
-        device=torch.device(cfg.device),
-    )
-    logger.info(f"VAD pipeline: {vad_pipeline}")
-
-    logger.info(f"Running initial run on {file_path}. To warm up the GPU.")
-    model.transcribe(file_path, **{"language" : cfg.benchmark.language})
-
-    # double batch size for each run
-    results_batched_vad = {}
-
-    def run(model, file_path, batch_size = 1, vad_pipeline = None):
-        start = time.time()
-        if vad_pipeline:
-            if batch_size == 1:
-                whisperx.transcribe_with_vad(model, file_path, vad_pipeline ,**{"language" : cfg.benchmark.language, "task": "transcribe"})
-            else:
-                whisperx.transcribe_with_vad_parallel(model, file_path, vad_pipeline,batch_size=batch_size ,**{"language" : cfg.benchmark.language, "task": "transcribe"})
+    def run_whisper_time_benchmark(cgf, file_path):
+        if cfg.model in cfg.available_models:
+            model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
         else:
-            model.transcribe(file_path, **{"language" : cfg.benchmark.language})
-        end =time.time()
-        return (end - start)
+            logger.error("Model not supported.")
+            return
+        logger.info(f"Loaded {cfg.model}")
 
-    logger.info(f"Batch size: 1")
-    result_standard = run(model, file_path)
-    results_vad = run(model, file_path, vad_pipeline = vad_pipeline)
-    results_batched_vad[1] = results_vad
+        logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'}")
+        logger.info(f"Running benchmark on {cfg.device}")
+        # warmup 
+        options = whisper.DecodingOptions(
+            fp16=cfg.decode_options.fp16, 
+            language=cfg.benchmark.language)
 
-    i = 2
-    while i <= cfg.batch_size:
-        logger.info(f"Batch size: {i}")
-        results_batched_vad[i] = run(model, file_path, batch_size = i, vad_pipeline = vad_pipeline)
-        logger.info(f"Batc  nr. {i}: {results_batched_vad[i]} min")
-        i *= 2
+        model.transcribe(file_path, **{"fp16" : True, "language" : cfg.benchmark.language})
+        # measure time
+        start = time.time()
+        for i in tqdm(range(10)):
+            model.transcribe(file_path, **{"fp16" : True, "language" : cfg.benchmark.language})
+        end = time.time()
+        time_taken = (end - start) / 10
+        return time_taken
 
+
+    def run_huggingface_time_benchmark(cfg, file_path):
+        logger.info(f"Running benchmark {cfg.whisper_version} on {cfg.device}")
+        pipe = pipeline(
+            "automatic-speech-recognition",
+            model=f"openai/whisper-{cfg.model}",
+            device=f"{cfg.device}:0",
+            torch_dtype=torch.float16,
+        )
         
-    # # save results
-    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-    #     json.dump(results_batched_vad, f)
-    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-    #     json.dump(results_vad, f)
-    # with open(f'{"../benchmarks/batching/{filename}_time"}.json', 'w') as f:
-    #     json.dump(results_linear, f)
+        hypotheses = []
+        references = []
+        language_token = f"<|{cfg.benchmark.language}|>"
+        if "en" in cfg.model:
+            generate_kwargs = {"no_repeat_ngram_size":5}
+        else:
+            generate_kwargs = {"task":"transcribe", "language":language_token, "no_repeat_ngram_size":5}
 
+        # warmup
+        pipe(file_path, chunk_length_s=30,
+                            generate_kwargs = generate_kwargs)
+        # measure time
+        start = time.time()
+        for i in tqdm(range(10)):
+            if cfg.batch_size == None:
+                pipe(file_path, chunk_length_s=30,
+                            generate_kwargs = generate_kwargs)
+            else:    
+                pipe(
+                    file_path, return_timestamps=True, chunk_length_s=30, stride_length_s=[6,3], batch_size=cfg.batch_size,
+                    generate_kwargs = generate_kwargs
+                )
+        end = time.time()
+        time_taken = (end - start) / 10
+        return time_taken
 
-    # plot results
-    fig , ax = plt.subplots(figsize=(12, 12))
-    ax.plot(list(results_batched_vad.keys()), list(results_batched_vad.values()), label='Batched VAD')
+    if cfg.whisper_version == 'whisper':
+        time_taken = run_whisper_time_benchmark(cfg, file_path)
+    elif cfg.whisper_version == 'huggingface':
+        time_taken = run_huggingface_time_benchmark(cfg, file_path)
+    else:
+        logger.error("Model not supported.")
+        return
     
-    # plot horizontal line for standard and vad
-    ax.axhline(y=result_standard, color='r', linestyle='-', label='Standard')
-    ax.axhline(y=results_vad, color='g', linestyle='-', label='VAD')
+    logger.info(f"Time: {time_taken:.5f} seconds, model: {cfg.model}, device: {cfg.device}, language: {cfg.benchmark.language}, whisper_version: {cfg.whisper_version}")
 
-    ax.set_xlabel('Batch size')
-    ax.set_ylabel('Time (s)')
-    ax.set_title(f'Batching time for {filename}')
-    ax.legend()
-    plt.savefig(f'{"./{filename}_time"}.png')
+
 
 
 def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
@@ -289,7 +295,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
 
     def run_whisper_longform_benchmark(cfg,loader):
         if cfg.model in cfg.available_models:
-            model = whisper.load_model(cfg.model, device=torch.device(cfg.device))
+            model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
         else:
             logger.error("Model not supported.")
             return
@@ -359,7 +365,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
 
         for audio, text in tqdm(loader):
             if cfg.batch_size == None:
-                results = pipe(audio, chunk_length_s=20,
+                results = pipe(audio, chunk_length_s=30,
                             generate_kwargs = generate_kwargs)
             else:    
                 results = pipe(
