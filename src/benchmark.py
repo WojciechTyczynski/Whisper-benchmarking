@@ -293,6 +293,10 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances.")
     
 
+    if "en" in cfg.model and cfg.benchmark.language != 'en':
+        logger.error("Model not supported.")
+        return
+
     def run_whisper_longform_benchmark(cfg,loader):
         if cfg.model in cfg.available_models:
             model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
