@@ -17,7 +17,7 @@ from pyannote.audio import Pipeline
 from pyannote.audio import Inference
 from huggingface_hub import login
 import json
-from transformers import WhisperProcessor, WhisperForConditionalGeneration, AutoProcessor, WhisperTokenizer, pipeline
+from transformers import WhisperProcessor, WhisperForConditionalGeneration, AutoProcessor, WhisperTokenizer, pipeline, WhisperFeatureExtractor
 
 from datasets_loaders.Common_voice import Common_voice
 from datasets_loaders.Common_voice_5_1 import Common_voice_5_1
@@ -58,7 +58,16 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     def run_huggingface_benchmark(cfg, options, loader):
         logger.info("Running benchmark with HuggingFace models.")
         processor = WhisperProcessor.from_pretrained(f"openai/whisper-{cfg.model}")
+        if cfg.model == "large":
+            cfg.model == "large-v2"
         model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-{cfg.model}").to(cfg.device)
+
+
+        if cfg.finetuned_model:
+            from peft import PeftModel
+            model = PeftModel.from_pretrained(model, cfg.finetuned_model_path)
+            model = model.merge_and_unload()
+            logger.info(f"Loaded finetuned model")       
         # convert model to fp16
         model = model.half()
 
@@ -83,6 +92,9 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     def run_whisper_benchmark(cfg, options, loader):
         logger.info("Running benchmark with Whisper models.")
         if cfg.model in cfg.available_models and cfg.finetuned_model == False:
+            if "en" in cfg.model and cfg.benchmark.language != 'en':
+                logger.warning("Benchmarking English model on non-English dataset.")
+                return
             model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
         elif cfg.finetuned_model:
             model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
@@ -119,6 +131,7 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         dataset = Fleurs(split='test', device='cpu', language = cfg.benchmark.dataset_language)
     elif cfg.benchmark.dataset == 'FTSpeech':
         dataset = FTSpeech(split='ft-speech_test-balanced')
+        cfg.num_workers = 0
     elif cfg.benchmark.dataset == 'NST_dk':
         dataset = NST_dk(split='test', device='cpu')
     elif cfg.benchmark.dataset == 'Common_voice':
@@ -134,6 +147,10 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     else:
         normalizer=BasicTextNormalizer()
 
+    if cfg.benchmark.language != 'en' and 'en' in cfg.model:
+        logger.warning("Benchmarking English model on non-English dataset.")
+        return
+
     if cfg.batch_size == -1:
         cfg.batch_size = None 
     
@@ -141,15 +158,18 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
     logger.info(f"Loaded {cfg.benchmark.dataset} dataset with {len(dataset)} utterances. Language {cfg.benchmark.language}")
     
     
-    if cfg.huggingface == True:
+    if cfg.whisper_version == "huggingface":
         hypotheses, references = run_huggingface_benchmark(cfg, options, loader)
     else:
         hypotheses, references = run_whisper_benchmark(cfg, options, loader)
 
-    
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
-    logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, Huggingface: {cfg.huggingface} CATCHME")
+
+    if cfg.finetuned_model:
+        logger.info(f"WER: {wer:.5%}, Model: {cfg.finetuned_model_path}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version} CATCHME")
+    else:
+        logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version} CATCHME")
     # for i,j in zip(hypotheses, references):
     #     print(f'{j}     <>      {i}')
 
@@ -298,12 +318,18 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
         return
 
     def run_whisper_longform_benchmark(cfg,loader):
-        if cfg.model in cfg.available_models:
+        if cfg.model in cfg.available_models and cfg.finetuned_model == False:
+            if "en" in cfg.model and cfg.benchmark.language != 'en':
+                logger.warning("Benchmarking English model on non-English dataset.")
+                return
             model = whisper.load_model(cfg.model, device=torch.device(cfg.device), download_root=whisper_cache_dir)
+            logger.info(f"Loaded {cfg.model}")
+        elif cfg.finetuned_model:
+            model = whisper.load_model(cfg.finetuned_model_path, device=torch.device(cfg.device))
+            logger.info(f"Loaded finetuned model") 
         else:
             logger.error("Model not supported.")
             return
-        logger.info(f"Loaded {cfg.model}")
 
         logger.info(f"Model is {'multilingual' if model.is_multilingual else 'English-only'}")
 
@@ -351,12 +377,23 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
 
     def run_huggingface_longform_benchmark(cfg,loader):
         logger.info(f"Running benchmark {cfg.whisper_version} on {cfg.device}")
+        if cfg.model == "large":
+            cfg.model == "large-v2"
+        model_path = f"openai/whisper-{cfg.model}"
         pipe = pipeline(
             "automatic-speech-recognition",
-            model=f"openai/whisper-{cfg.model}",
+            model=model_path,
             device=f"{cfg.device}:0",
             torch_dtype=torch.float16,
         )
+
+        if cfg.finetuned_model:
+            from peft import PeftModel
+            model = PeftModel.from_pretrained(pipe.model, cfg.finetuned_model_path)
+            model = model.merge_and_unload()
+            pipe.model = model
+            logger.info(f"Loaded finetuned model")        
+
         
         hypotheses = []
         references = []
@@ -395,4 +432,8 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
 
     wer = get_WER_MultipleTexts(hypotheses, references, normalizer=normalizer)
     #logger.info(f"Time: {end_total - start_total:.5f} seconds, WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset} CATCHME")
-    logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version}, batch_size: {cfg.batch_size} CATCHME")
+
+    if cfg.finetuned_model:
+        logger.info(f"WER: {wer:.5%}, Model: {cfg.finetuned_model_path}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version}, batch_size: {cfg.batch_size} CATCHME")
+    else:
+        logger.info(f"WER: {wer:.5%}, Model: {cfg.model}, Dataset: {cfg.benchmark.dataset}, whisper_version: {cfg.whisper_version}, batch_size: {cfg.batch_size} CATCHME")
