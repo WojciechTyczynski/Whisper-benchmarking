@@ -59,7 +59,8 @@ def benchmark_model(cfg, options:whisper.DecodingOptions):
         logger.info("Running benchmark with HuggingFace models.")
         processor = WhisperProcessor.from_pretrained(f"openai/whisper-{cfg.model}")
         if cfg.model == "large":
-            cfg.model == "large-v2"
+            cfg.model = "large-v2"
+            logger.warning(f"Benchmarking {cfg.model} model instead of large.")
         model = WhisperForConditionalGeneration.from_pretrained(f"openai/whisper-{cfg.model}").to(cfg.device)
 
 
@@ -378,7 +379,7 @@ def benchmark_longform_wer(cfg, options:whisper.DecodingOptions):
     def run_huggingface_longform_benchmark(cfg,loader):
         logger.info(f"Running benchmark {cfg.whisper_version} on {cfg.device}")
         if cfg.model == "large":
-            cfg.model == "large-v2"
+            cfg.model = "large-v2"
         model_path = f"openai/whisper-{cfg.model}"
         pipe = pipeline(
             "automatic-speech-recognition",
